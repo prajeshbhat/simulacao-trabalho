@@ -10,6 +10,7 @@ def makeDistribution(function,*pars):
         return function(*pars)
     return distribution
 
+## Componentes do modelo
 
 class Embalador(Process):
     def __init__(self, nome, estoque_capacidade, reiniciarEvent):
@@ -103,7 +104,9 @@ class Demanda(Process):
                 self.reiniciarEvent.signal()
 
 
-def main(capacidade, num_produtos, t_simulacao, reabastecimento):
+## Modelo
+
+def modelo(capacidade, num_produtos, t_simulacao, reabastecimento):
     """
     Argumentos:
     capacidade: capacidade máxima do armazém
@@ -122,3 +125,23 @@ def main(capacidade, num_produtos, t_simulacao, reabastecimento):
     activate(demanda, demanda.obter(estoque))
     
     simulate(until=t_simulacao)
+
+
+## Estatísticas
+
+def estatisticas():
+    pass # TODO
+
+
+class MinhaGUI(SimGUI):
+    def __init__(self, win, **p):
+        SimGUI.__init__(self, win, p)
+        self.run.add_command(label='executar modelo', command=run)
+        self.view.add_command(label='estatísticas', command=estatisticas)
+
+        self.params = Parameters()
+
+
+root = Tk()
+gui = MinhaGUI(root, title="Simulação do sistema de embalamento")
+gui.mainloop()
