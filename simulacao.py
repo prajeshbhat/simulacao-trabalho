@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from SimPy.Simulation import *
+import random
 
 ##  distribution factory
 def makeDistribution(function,*pars):
@@ -71,7 +72,7 @@ class Falha(Process):
 class Demanda(Process):
     def __init__(self, nome, reiniciarEvent):
         Process.__init__(self, nome)
-        self.demandaSatisfeitaMon = (name="Demanda atendida dos clientes")
+        self.demandaSatisfeitaMon = Monitor(name="Demanda atendida dos clientes")
         self.reiniciarEvent = reiniciarEvent
 
     def obter(self, estoque, tec_va, demanda_va, reabastecimento): # PEM
@@ -98,7 +99,8 @@ class Demanda(Process):
                 yield get, self, estoque, quant
                 self.demandaSatisfeitaMon.observe(float(quant)/num_demanda, t_now)
 
-            if 
+            if quant >= reabastecimento:
+                self.reiniciarEvent.signal()
 
 
 def main(capacidade, num_produtos, t_simulacao, reabastecimento):
