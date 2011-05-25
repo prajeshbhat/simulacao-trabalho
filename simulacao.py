@@ -215,9 +215,29 @@ def run():
     """Faz o parsing das opções passadas.
 
     """
+    # pergunta t_simulacao TODO
     top = Toplevel(root)
 
+    modelo = Modelo()
+    modelo.capacidade = gui.capacidade_obj
+
 class MinhaGUI(SimGUI):
+    entryText = {
+        'capacidade': 'Capacidade do armazém',
+        'num_produtos': 'Número de produtos embalados',
+        'reabastecimento': 'Ponto de reabastecimento',
+        'process_va': 'Tempo de processamento do empacotamento',
+        'process_va_sem' 'Semente do temp. de proc.',
+        'reparo_va': 'Tempo de reparo do empacotador',
+        'reparo_va_sem': 'Semente do tempo de reparo',
+        'tef_va': 'Tempo entre falhas',
+        'tef_va_sem': 'Semente do tempo entre falhas',
+        'tec_va': 'Tempo entre chegada de clientes',
+        'tec_va_sem': 'Semento do tempo entre chegada',
+        'demanda_va': 'Número de produtos da demanda',
+        'demanda_va_sem': 'Semente do núm. de produtos da demanda'
+        }
+    
     def __init__(self, win, **p):
         SimGUI.__init__(self, win, p)
         self.run.add_command(label='executar modelo', command=run)
@@ -227,11 +247,9 @@ class MinhaGUI(SimGUI):
         self.floatDistr2funcName = dist(intdistr2funcname)
         self.floatDistr2funcName['uniforme'] = 'uniform'
         
-        pat_str_template = r'(?P<nome>uniforme|normal|exponencial|triangular)\s*\((?P<valor>\s*{numero}\s*(?:,\s*{numero}\s*)*)\)'
+        pat_str_template = r'(?P<nome>uniforme|normal|exponencial|triangular)\s*\((?P<valores>\s*{numero}\s*(?:,\s*{numero}\s*)*)\)'
         int_pat_str = r'\d+'
         float_pat_str = r'(\d+(?:\.\d*)?|\.\d+)'
-
-        uniforme_str_template = r'uniforme\s*(\(\)'
 
         self.int_distributions_pat = re.compile(pat_str_template.format(numero=int_pat_str), re.VERBOSE)
         self.float_distributions_pat = re.compile(pat_str_template.format(numero=float_pat_str), re.VERBOSE)
@@ -364,75 +382,29 @@ class MinhaGUI(SimGUI):
             try:
                 nome_atributo = k+'_obj'
                 setattr(self, nome_atributo, getattr(self, k).get())
-                if k in ['process_va', 'demanda_va']:
-                    # distribuições de valores discretos
-                    matchobj = self.int_distributions_pat.match(getattr(self, nome_atributo))
-                    if matchobj:
-                        
-                elif k in ['reparo_va', 'tef_va', 'tec_va']:
-                    # distribuições de valores contínuos
-                    pass
 
             except ValueError:
                 entradaCorreta = False
-                showerror(title='Erro de entrada', message='O parâmetro ')
+                showerror(title='Erro de entrada', message='O parâmetro "%s" está errado.' % self.entryText[k])
                 break
 
-        m = self.int_distributions_pat.match(self.process_va_obj)
-        if m:
-            try:
-                intDistr2funcName['process_va']
-                eval(m.group('nome') + '('m.group('valor') + ')')
-            except:
-            
-            
-            
-        
-        
-        if entradaCorreta:
-            self.paramWindow.destroy()
-
-    def changeParameters(self):
-        self.findParameters()
-        if not self._parameters:
-            showwarning("SimGUI warning","No Parameters instance found.") 
-            return
-        self.paramWindow=Toplevel(self.root)
-        top=Frame(self.paramWindow)
-        self.lbl={}
-        self.ent={}
-        i=1
-        for p in self._parameters.__dict__.keys():
-            self.lbl[p]=Label(top,text=p)
-            self.lbl[p].grid(row=i,column=0)
-            self.ent[p]=Entry(top)
-            self.ent[p].grid(row=i,column=1)
-            self.ent[p].insert(0,self._parameters.__dict__[p])
-            i+=1
-        top.pack(side=TOP,fill=BOTH,expand=YES)
-        commitBut=Button(top,text='Change parameters',command=self.commit)
-        commitBut.grid(row=i,column=1)
-
-
-
-    def commit(self):
-        entradaCorreta = False
-        for p in self._parameters.__dict__.keys():
-            entrada = getattr(self._parameters, p)
-            if p == 'reabastecimento':
+        for disc_attr in ['process_va', 'demanda_va', 'reparo_va', 'tef_va', 'tec_va']:
+            nome_atributo = disc_attr+'_obj'
+            m = self.int_distributions_pat.match(getattr(self, nome_atributo))
+            if m:
                 try:
-                    setattr(self._parameters, p, int(self.ent[p].get()))
-                except ValueError:
-                    showerror(title='Erro de entrada', message)
+                    distr_k = m.group('nome')
+                    distrMethodName = intDistr2funcName[distr_k] if disc_attr in ['process_va', 'demanda_va'] else floatDistr2funcName[distr_k]
+                    rand = random.Random(getattr(self, disc_attr+'_sem_obj'))
+                    setattr(self, nome_atributo, eval('makeDistribution(rand.' + 'distrMethodName, ' + m.group('valores'))
+                except:
+                    entradaCorreta = False
+                    showerror(title='Erro de entrada', message='A expressão da VA "%s" está errada' % self.entryText[disc_attr])
                     break
-                
-            elif p == '':
-                pass
-        else:
-            entradaCorreta = True
-                
+        
         if entradaCorreta:
             self.paramWindow.destroy()
+
 
 
 root = Tk()
