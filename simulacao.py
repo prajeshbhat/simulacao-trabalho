@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from SimPy.Simulation import *
+from SimPy.SimGUI import *
 import random, re
 
 distribuicoes = ['uniforme', 'normal', 'exponencial']
@@ -15,7 +16,7 @@ def makeDistribution(function,*pars):
 ## Componentes do modelo
 
 class Embalador(Process):
-    def __init__(self, nome='Embalador', reiniciarEv):
+    def __init__(self, reiniciarEv, nome='Embalador'):
         Process.__init__(self, nome)
         self.reiniciarEvent = reiniciarEv
 
@@ -52,7 +53,7 @@ class Embalador(Process):
 
 class Falha(Process):
 
-    def __init__(self, nome='Falha', embalador):
+    def __init__(self, embalador, nome='Falha'):
         Process.__init__(self, nome)
         self.embalador = embalador
 
@@ -72,7 +73,7 @@ class Falha(Process):
 
 
 class Demanda(Process):
-    def __init__(self, nome='Demanda', reiniciarEv):
+    def __init__(self, reiniciarEv, nome='Demanda'):
         Process.__init__(self, nome)
         self.demandaSatisfeitaMon = Monitor(name="Demanda atendida dos clientes")
         self.reiniciarEvent = reiniciarEv
@@ -227,7 +228,7 @@ class MinhaGUI(SimGUI):
         'num_produtos': 'Número de produtos embalados',
         'reabastecimento': 'Ponto de reabastecimento',
         'process_va': 'Tempo de processamento do empacotamento',
-        'process_va_sem' 'Semente do temp. de proc.',
+        'process_va_sem': 'Semente do temp. de proc.',
         'reparo_va': 'Tempo de reparo do empacotador',
         'reparo_va_sem': 'Semente do tempo de reparo',
         'tef_va': 'Tempo entre falhas',
@@ -244,7 +245,7 @@ class MinhaGUI(SimGUI):
         self.view.add_command(label='estatísticas', command=estatisticas)
 
         self.intDistr2funcName = {'uniforme' : 'randint', 'normal': 'normalvariate', 'exponencial': 'expovariate', 'triangular': 'triangular'}
-        self.floatDistr2funcName = dist(intdistr2funcname)
+        self.floatDistr2funcName = dict(self.intDistr2funcName)
         self.floatDistr2funcName['uniforme'] = 'uniform'
         
         pat_str_template = r'(?P<nome>uniforme|normal|exponencial|triangular)\s*\((?P<valores>\s*{numero}\s*(?:,\s*{numero}\s*)*)\)'
@@ -370,41 +371,44 @@ class MinhaGUI(SimGUI):
         self.paramLabels['demanda_va_sem'].grid(row=19, column=0, sticky=E)
         self.paramEntries['demanda_va_sem'] = Entry(top, textvariable=self.demanda_va_sem)
         self.paramEntries['demanda_va_sem'].grid(row=19, column=1, sticky=W)
-                                                    
+
+        top.pack(side=TOP,fill=BOTH,expand=YES)                                                    
         commitBut=Button(top,text='Mudar parâmetros',command=self.commit)
         commitBut.grid(row=21, column=1)
 
     
     def commit(self):
-        entradaCorreta = True
+        entrada_tmp = dict()
+        var_aleatorias = ['process_va', 'demanda_va', 'reparo_va', 'tef_va', 'tec_va']
         
         for k in self.paramEntries:
             try:
-                nome_atributo = k+'_obj'
-                setattr(self, nome_atributo, getattr(self, k).get())
+                if k in var_aleatorias:
+                    entrada_tmp[k] = getattr(self, k).get()
 
             except ValueError:
                 entradaCorreta = False
                 showerror(title='Erro de entrada', message='O parâmetro "%s" está errado.' % self.entryText[k])
-                break
+                return
 
-        for disc_attr in ['process_va', 'demanda_va', 'reparo_va', 'tef_va', 'tec_va']:
-            nome_atributo = disc_attr+'_obj'
-            m = self.int_distributions_pat.match(getattr(self, nome_atributo))
+        for disc_attr in var_aleatorias:
+            m = self.int_distributions_pat.match(var_aleatorias[disc_attr]) \
+                if disc_attr in ['process_va', 'demanda_va']  else \
+                self.float_distributions_pat.match(var_aleatorias[disc_attr])
             if m:
                 try:
                     distr_k = m.group('nome')
                     distrMethodName = intDistr2funcName[distr_k] if disc_attr in ['process_va', 'demanda_va'] else floatDistr2funcName[distr_k]
                     rand = random.Random(getattr(self, disc_attr+'_sem_obj'))
-                    setattr(self, nome_atributo, eval('makeDistribution(rand.' + 'distrMethodName, ' + m.group('valores'))
+                    nome_atributo = disc_attr+'_obj'
+                    setattr(self, nome_atributo, eval('makeDistribution(rand.' + 'distrMethodName, ' + m.group('valores')))
                 except:
                     entradaCorreta = False
                     showerror(title='Erro de entrada', message='A expressão da VA "%s" está errada' % self.entryText[disc_attr])
-                    break
-        
-        if entradaCorreta:
-            self.paramWindow.destroy()
-
+                    return
+                            
+        self.paramWindow.destroy()
+                            
 
 
 root = Tk()
