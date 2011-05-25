@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from SimPy.Simulation import *
-import random
+import random, re
 
 distribuicoes = ['uniforme', 'normal', 'exponencial']
 
@@ -223,6 +223,19 @@ class MinhaGUI(SimGUI):
         self.run.add_command(label='executar modelo', command=run)
         self.view.add_command(label='estatísticas', command=estatisticas)
 
+        self.intDistr2funcName = {'uniforme' : 'randint', 'normal': 'normalvariate', 'exponencial': 'expovariate', 'triangular': 'triangular'}
+        self.floatDistr2funcName = dist(intdistr2funcname)
+        self.floatDistr2funcName['uniforme'] = 'uniform'
+        
+        pat_str_template = r'(?P<nome>uniforme|normal|exponencial|triangular)\s*\((?P<valor>\s*{numero}\s*(?:,\s*{numero}\s*)*)\)'
+        int_pat_str = r'\d+'
+        float_pat_str = r'(\d+(?:\.\d*)?|\.\d+)'
+
+        uniforme_str_template = r'uniforme\s*(\(\)'
+
+        self.int_distributions_pat = re.compile(pat_str_template.format(numero=int_pat_str), re.VERBOSE)
+        self.float_distributions_pat = re.compile(pat_str_template.format(numero=float_pat_str), re.VERBOSE)
+
         self.capacidade = IntVar()
         self.capacidade.set(1000)
 
@@ -270,7 +283,114 @@ class MinhaGUI(SimGUI):
         self.paramLabels = {}
         self.paramEntries = {}
 
-        self.paramLabels['capacidade']
+        self.paramLabels['capacidade'] = Label(top, text='Capacidade do armazém')
+        self.paramLabels['capacidade'].grid(row=0, column=0, sticky=E)
+        self.paramEntries['capacidade'] = Entry(top, textvariable=self.capacidade)
+        self.paramEntries['capacidade'].grid(row=0, column=1, sticky=W)
+
+        self.paramLabels['num_produtos'] = Label(top, text='Número de produtos embalados')
+        self.paramLabels['num_produtos'].grid(row=2, column=0, sticky=E)
+        self.paramEntries['num_produtos'] = Entry(top, textvariable=self.num_produtos)
+        self.paramEntries['num_produtos'].grid(row=2, column=1, sticky=W)
+
+        self.paramLabels['reabastecimento'] = Label(top, text='Ponto de reabastecimento')
+        self.paramLabels['reabastecimento'].grid(row=4, column=0, sticky=E)
+        self.paramEntries['reabastecimento'] = Entry(top, textvariable=self.reabastecimento)
+        self.paramEntries['reabastecimento'].grid(row=4, column=1, sticky=W)
+
+
+        self.paramLabels['process_va'] = Label(top, text='Tempo de processamento do empacotamento')
+        self.paramLabels['process_va'].grid(row=6, column=0, sticky=E)
+        self.paramEntries['process_va'] = Entry(top, textvariable=self.process_va)
+        self.paramEntries['process_va'].grid(row=6, column=1, sticky=W)
+
+        self.paramLabels['process_va_sem'] = Label(top, text='Semente')
+        self.paramLabels['process_va_sem'].grid(row=7, column=0, sticky=E)
+        self.paramEntries['process_va_sem'] = Entry(top, textvariable=self.process_va_sem)
+        self.paramEntries['process_va_sem'].grid(row=7, column=1, sticky=W)
+
+
+        self.paramLabels['reparo_va'] = Label(top, text='Tempo de reparo do empacotador')
+        self.paramLabels['reparo_va'].grid(row=9, column=0, sticky=E)
+        self.paramEntries['reparo_va'] = Entry(top, textvariable=self.reparo_va)
+        self.paramEntries['reparo_va'].grid(row=9, column=1, sticky=W)
+
+        self.paramLabels['reparo_va_sem'] = Label(top, text='Semente')
+        self.paramLabels['reparo_va_sem'].grid(row=10, column=0, sticky=E)
+        self.paramEntries['reparo_va_sem'] = Entry(top, textvariable=self.reparo_va_sem)
+        self.paramEntries['reparo_va_sem'].grid(row=10, column=1, sticky=W)
+
+
+        self.paramLabels['tef_va'] = Label(top, text='Tempo entre falhas')
+        self.paramLabels['tef_va'].grid(row=12, column=0, sticky=E)
+        self.paramEntries['tef_va'] = Entry(top, textvariable=self.tef_va)
+        self.paramEntries['tef_va'].grid(row=12, column=1, sticky=W)
+
+        self.paramLabels['tef_va_sem'] = Label(top, text='Semente')
+        self.paramLabels['tef_va_sem'].grid(row=13, column=0, sticky=E)
+        self.paramEntries['tef_va_sem'] = Entry(top, textvariable=self.tef_va_sem)
+        self.paramEntries['tef_va_sem'].grid(row=13, column=1, sticky=W)
+
+
+        self.paramLabels['tec_va'] = Label(top, text='Tempo entre chegada de clientes')
+        self.paramLabels['tec_va'].grid(row=15, column=0, sticky=E)
+        self.paramEntries['tec_va'] = Entry(top, textvariable=self.tec_va)
+        self.paramEntries['tec_va'].grid(row=15, column=1, sticky=W)
+
+        self.paramLabels['tec_va_sem'] = Label(top, text='Semente')
+        self.paramLabels['tec_va_sem'].grid(row=16, column=0, sticky=E)
+        self.paramEntries['tec_va_sem'] = Entry(top, textvariable=self.tec_va_sem)
+        self.paramEntries['tec_va_sem'].grid(row=16, column=1, sticky=W)
+
+
+        self.paramLabels['demanda_va'] = Label(top, text='Número de produtos da demanda')
+        self.paramLabels['demanda_va'].grid(row=18, column=0, sticky=E)
+        self.paramEntries['demanda_va'] = Entry(top, textvariable=self.demanda_va)
+        self.paramEntries['demanda_va'].grid(row=18, column=1, sticky=W)
+        
+        self.paramLabels['demanda_va_sem'] = Label(top, text='Semente')
+        self.paramLabels['demanda_va_sem'].grid(row=19, column=0, sticky=E)
+        self.paramEntries['demanda_va_sem'] = Entry(top, textvariable=self.demanda_va_sem)
+        self.paramEntries['demanda_va_sem'].grid(row=19, column=1, sticky=W)
+                                                    
+        commitBut=Button(top,text='Mudar parâmetros',command=self.commit)
+        commitBut.grid(row=21, column=1)
+
+    
+    def commit(self):
+        entradaCorreta = True
+        
+        for k in self.paramEntries:
+            try:
+                nome_atributo = k+'_obj'
+                setattr(self, nome_atributo, getattr(self, k).get())
+                if k in ['process_va', 'demanda_va']:
+                    # distribuições de valores discretos
+                    matchobj = self.int_distributions_pat.match(getattr(self, nome_atributo))
+                    if matchobj:
+                        
+                elif k in ['reparo_va', 'tef_va', 'tec_va']:
+                    # distribuições de valores contínuos
+                    pass
+
+            except ValueError:
+                entradaCorreta = False
+                showerror(title='Erro de entrada', message='O parâmetro ')
+                break
+
+        m = self.int_distributions_pat.match(self.process_va_obj)
+        if m:
+            try:
+                intDistr2funcName['process_va']
+                eval(m.group('nome') + '('m.group('valor') + ')')
+            except:
+            
+            
+            
+        
+        
+        if entradaCorreta:
+            self.paramWindow.destroy()
 
     def changeParameters(self):
         self.findParameters()
