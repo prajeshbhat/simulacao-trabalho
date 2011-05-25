@@ -4,6 +4,8 @@
 from SimPy.Simulation import *
 import random
 
+distribuicoes = ['uniforme', 'normal', 'exponencial']
+
 ##  distribution factory
 def makeDistribution(function,*pars):
     def distribution():
@@ -108,7 +110,6 @@ class Modelo:
     def __init__(self):
         self._capacidade = None
         self._num_produtos = None
-        self._t_simulacao = None
         self._reabastecimento = None
         self._process_va = None
         self._reparo_va = None
@@ -211,9 +212,10 @@ def estatisticas():
 
 
 def run():
-"""Faz o parsing das opções passadas.
+    """Faz o parsing das opções passadas.
 
-"""
+    """
+    top = Toplevel(root)
 
 class MinhaGUI(SimGUI):
     def __init__(self, win, **p):
@@ -221,7 +223,54 @@ class MinhaGUI(SimGUI):
         self.run.add_command(label='executar modelo', command=run)
         self.view.add_command(label='estatísticas', command=estatisticas)
 
-        self.params = Parameters()
+        self.capacidade = IntVar()
+        self.capacidade.set(1000)
+
+        self.num_produtos = IntVar()
+        self.num_produtos.set(3)
+
+        self.reabastecimento = IntVar()
+        self.reabastecimento.set(700)
+
+        self.process_va = StringVar()
+        self.process_va.set('exponencial(2.5)')
+
+        self.process_va_sem = IntVar()
+        self.process_va_sem.set(42)
+
+        self.reparo_va = StringVar()
+        self.reparo_va.set('uniforme(1, 3.5)')
+
+        self.reparo_va_sem = IntVar()
+        self.reparo_va_sem.set(3)
+
+        self.tef_va = StringVar()
+        self.tef_va.set('triangular(30, 70, 43)')
+
+        self.tef_va_sem = IntVar()
+        self.tef_va_sem.set(37)
+
+        self.tec_va = StringVar()
+        self.tec_va.set('exponencial(7.2)')
+
+        self.tec_va_sem = IntVar()
+        self.tec_va_sem.set(3487)
+
+        self.demanda_va = StringVar()
+        self.demanda_va.set('uniforme(2, 6)')
+
+        self.demanda_va_sem = IntVar()
+        self.demanda_va_sem.set(234)
+
+
+    def changeParameters(self):
+        self.paramWindow = Toplevel(self.root)
+        top = Frame(self.paramWindow)
+
+        self.paramLabels = {}
+        self.paramEntries = {}
+
+        self.paramLabels['capacidade']
 
     def changeParameters(self):
         self.findParameters()
