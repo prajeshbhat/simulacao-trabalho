@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from SimPy.Simulation import *
+from SimPy.SimulationTrace import *
 from dispatch import Signal
 
 ## Componentes do Modelo ----------------------
@@ -92,10 +92,11 @@ class Modelo(Simulation):
         self._pesagem_va = None
         self._viagem_va = None
         self.nrViagensRealizadas_changed = Signal(providing_args=['nrViagensRealizadas'])
+        self.caminhao_changed_handler = None
         self._nrViagensRealizadas = 0
 
     def _nroTotalDeViagensForamRealizadas(self):
-        if maxViagens is None:
+        if self.maxViagens is None:
             return false
 
         return self.nrViagensRealizadas == self.maxViagens
@@ -154,15 +155,16 @@ class Modelo(Simulation):
         carWaitMon = NotifyMonitor(signal= self.fila_carregadores_changed,
                                    name = 'Wait Queue Monitor %s'%car_name,
                                    ylab = 'nr in queue', tlab = 'time',
-                                   sim = self.sim)
-        carWaitMon.observe(self.now(), y=len(self.carregadores.waitQ))
+                                   sim = self)
+        print len(self.carregadores.waitQ)
+        carWaitMon.observe(t=self.now(), y=len(self.carregadores.waitQ))
         self.carregadores.waitMon = carWaitMon
 
         carActMon = NotifyMonitor(signal=self.carregadores_ativos_changed,
                                   name = 'Active Queue Monitor %s'%car_name,
                                   ylab = 'nr in queue', tlab = 'time',
-                                  sim = self.sim)
-        carActMon.observe(self.now(), y=len(self.carregadores.activeQ))
+                                  sim = self)
+        carActMon.observe(t=self.now(), y=len(self.carregadores.activeQ))
         self.carregadores.actMon = carActMon
 
         bal_name = 'Balança'
@@ -170,15 +172,15 @@ class Modelo(Simulation):
         balWaitMon = NotifyMonitor(signal=self.fila_balanca_changed,
                                    name = 'Wait Queue Monitor %s'%bal_name,
                                    ylab = 'nr in queue', tlab = 'time',
-                                   sim = self.sim)
-        balWaitMon.observe(self.now(), y=len(self.balanca.waitq))
+                                   sim = self)
+        balWaitMon.observe(t=self.now(), y=len(self.balanca.waitQ))
         self.balanca.waitMon = balWaitMon
 
         balActMon = NotifyMonitor(signal=self.balanca_ativo_changed,
                                   name = 'Active Queue Monitor %s'%bal_name,
                                   ylab = 'nr in queue', tlab = 'time',
-                                  sim = self.sim)
-        balActMon.observe(self.now(), y=len(self.balanca.activeQ))
+                                  sim = self)
+        balActMon.observe(t=self.now(), y=len(self.balanca.activeQ))
         self.balanca.actMon = balActMon
 
         for i in range(self._nrCaminhoes):
@@ -192,11 +194,11 @@ class Modelo(Simulation):
 class NotifyMonitor(Monitor):
 
     def __init__(self, signal, **kwargs):
-        NotifyMonitor.__init__(self, **kwargs)
+        Monitor.__init__(self, **kwargs)
         self.monitor_changed = signal
     
     def observe(self, y, t=None):
-        Monitor.observe(self, y, t)
+        Monitor.observe(self, y=y, t=t)
         self.monitor_changed.send(sender=self, tam=y)
         
 
