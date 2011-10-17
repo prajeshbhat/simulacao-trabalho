@@ -92,7 +92,7 @@ class Modelo(Simulation):
         self._pesagem_va = None
         self._viagem_va = None
         self.nrViagensRealizadas_changed = Signal(providing_args=['nrViagensRealizadas'])
-        self.caminhao_changed_handler = None
+        self.caminhao_changed_handler = lambda: pass
         self._nrViagensRealizadas = 0
 
     def _nroTotalDeViagensForamRealizadas(self):
