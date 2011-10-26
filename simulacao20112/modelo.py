@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from SimPy.SimulationTrace import *
+from SimPy.SimulationStep import *
 from dispatch import Signal
+import pdb
 
 ## Componentes do Modelo ----------------------
 
@@ -73,9 +74,13 @@ class Caminhao(Process):
             
 ## Modelo -----------------------------------------
 
-class Modelo(Simulation):
+class ModeloError(Exception):
+    def __init__(self, **kwargs):
+        Exception.__init__(self, **kwargs)
+
+class Modelo(SimulationStep):
     
-    def __init__(self, nrCaminhoes=10, tempoSimulacao=1000, maxViagens=None):
+    def __init__(self, nrCaminhoes=10, tempoSimulacao=1000000, maxViagens=None):
         Simulation.__init__(self)
         self.nrCaminhoes_changed = Signal(providing_args=['nrCaminhoes'])
         self.nrCaminhoes = nrCaminhoes
@@ -92,12 +97,15 @@ class Modelo(Simulation):
         self._pesagem_va = None
         self._viagem_va = None
         self.nrViagensRealizadas_changed = Signal(providing_args=['nrViagensRealizadas'])
-        self.caminhao_changed_handler = lambda: pass
+        def default_handler(sender, **kwargs):
+            pass
+        self.caminhao_changed_handler = default_handler
         self._nrViagensRealizadas = 0
+        self._inicializado = False
 
     def _nroTotalDeViagensForamRealizadas(self):
         if self.maxViagens is None:
-            return false
+            return False
 
         return self.nrViagensRealizadas == self.maxViagens
 
@@ -146,7 +154,10 @@ class Modelo(Simulation):
     def viagem_va(self, value):
         self._viagem_va = value
 
-    def rodar(self):
+    def inicializar(self):
+        if self.maxViagens is None and self.tempoSimulacao is None:
+            raise ModeloError('Número máximo de viagens e o tempo de simulação não foram informados. Ao menos um deles deve ser informado')
+
         self.nrViagensRealizadas = 0
         self.initialize()
 
@@ -189,7 +200,20 @@ class Modelo(Simulation):
             self.caminhoes.append(caminhao)
             self.activate(caminhao, caminhao.rodar())
 
-        self.simulate(until=1000)
+        self._inicializado = True
+        
+    def inicializado(self):
+        return self._inicializado
+
+    def rodar(self, step=False):
+        if not self.inicializado():
+            self.inicializar()
+
+#        pdb.set_trace()
+# TODO: usar variavel self.stop_l setada com um Lock
+#       while not self.stop_l and self.has_events():
+        while self.has_events():
+            self.simulateStep(until=self.tempoSimulacao)
 
 class NotifyMonitor(Monitor):
 
