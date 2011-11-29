@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import sys
+import pdb
+
 from SimPy.SimulationStep import *
 from dispatch import Signal
-import pdb
+
+
 
 ## Componentes do Modelo ----------------------
 
@@ -80,7 +84,7 @@ class ModeloError(Exception):
 
 class Modelo(SimulationStep):
     
-    def __init__(self, nrCaminhoes=10, tempoSimulacao=1000000, maxViagens=None):
+    def __init__(self, nrCaminhoes=10, tempoSimulacao=sys.maxint, maxViagens=None):
         Simulation.__init__(self)
         self.nrCaminhoes_changed = Signal(providing_args=['nrCaminhoes'])
         self.nrCaminhoes = nrCaminhoes

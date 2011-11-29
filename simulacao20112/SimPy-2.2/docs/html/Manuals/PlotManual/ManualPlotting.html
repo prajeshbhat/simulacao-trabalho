@@ -1,0 +1,849 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SimPlot Manual &mdash; SimPy v2.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="SimPy v2.2 documentation" href="../../index.html" />
+    <link rel="up" title="SimPy Libraries" href="../../SimPy_Libraries.html" />
+    <link rel="next" title="SimGUI Manual" href="../GUIManual/SimGUImanual.html" />
+    <link rel="prev" title="SimPy Libraries" href="../../SimPy_Libraries.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../GUIManual/SimGUImanual.html" title="SimGUI Manual"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../../SimPy_Libraries.html" title="SimPy Libraries"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">SimPy v2.2 documentation</a> &raquo;</li>
+          <li><a href="../../SimPy_Libraries.html" accesskey="U">SimPy Libraries</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="simplot-manual">
+<h1><a class="toc-backref" href="#id3">SimPlot Manual</a><a class="headerlink" href="#simplot-manual" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Authors:</th><td class="field-body">Klaus Muller &lt;<a class="reference external" href="mailto:Muller&#37;&#52;&#48;users&#46;sourceforge&#46;net">Muller<span>&#64;</span>users<span>&#46;</span>sourceforge<span>&#46;</span>net</a>&gt;</td>
+</tr>
+<tr class="field"><th class="field-name">SimPy release:</th><td class="field-body">2.2</td>
+</tr>
+<tr class="field"><th class="field-name">Web-site:</th><td class="field-body"><a class="reference external" href="http://simpy.sourceforge.net/">http://simpy.sourceforge.net/</a></td>
+</tr>
+<tr class="field"><th class="field-name">Python-Version:</th><td class="field-body">2.3 and later (not 3.0)</td>
+</tr>
+<tr class="field"><th class="field-name">Revision:</th><td class="field-body">$Revision: 361 $</td>
+</tr>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">$Date: 2010-01-11 00:58:57 +1300 (Mon, 11 Jan 2010) $</td>
+</tr>
+</tbody>
+</table>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#simplot-manual" id="id3">SimPlot Manual</a><ul>
+<li><a class="reference internal" href="#introduction" id="id4">Introduction</a></li>
+<li><a class="reference internal" href="#plotting-with-simplot-an-overview" id="id5">Plotting with SimPlot - an overview</a></li>
+<li><a class="reference internal" href="#simple-plotting-api" id="id6">Simple plotting API</a></li>
+<li><a class="reference internal" href="#advanced-plotting-api" id="id7">Advanced plotting API</a></li>
+<li><a class="reference internal" href="#colours-in-simplot" id="id8">Colours in SimPlot</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>The <strong>SimPlot</strong> plotting library has been developed for SimPy users so that
+they can produce, view and print simple plots, without having to download and
+install any other software package.</p>
+<p>This manual is aimed at the SimPy applications programmer. It describes the
+capabilities of SimPlot and its programming interface.</p>
+<p>There are several more elaborate Open Source plotting packages downloadable from the
+Internet which can be used from Python and therefore from SimPy. SimPlot is
+the &#8220;quick and dirty&#8221;, out-of-the-box plotting package for SimPy. If you need
+more complex plots or publication-quality graphics, consider using e.g. Matplotlib
+( &lt;<a class="reference external" href="http://matplotlib.sourceforge.net/">http://matplotlib.sourceforge.net/</a>&gt;_ ).</p>
+<div class="section" id="introduction">
+<h2><a class="toc-backref" href="#id4">Introduction</a><a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>SimPlot is a basic plotting package based on Tk/Tkinter and designed for use
+with SimPy. It has been developed from an Open Source plotting package
+published in John E. Grayson&#8217;s excellent book &#8216;Python and Tkinter Programming&#8217;
+(ISBN 1-884777-81-3) which in turn was derived from Konrad Hinsen&#8217;s graph
+widget for NumPy (Numerical Python).</p>
+<p>SimPlot provides for the generation, viewing and Postscript output of
+a variety of plot types by SimPy programs. The data series of SimPy Monitor instances
+can be plotted automatically.</p>
+<p>SimPlot requires Tk/Tkinter to be installed
+(for all major operating systems on which Python runs, the Python installation
+already includes the installation of Tk/Tkinter, so no additional download or
+installation is required). Test whether Tk/Tkinter is installed by running
+&#8216;import Tkinter&#8217; on the Python interpreter command line. If you don&#8217;t get
+an error message, it is.</p>
+<p>To write SimPlot-based programs, only a very rudimentary understanding
+of Tk/Tkinter is required. <em>This manual does not attempt to teach Tk/Tkinter!</em></p>
+</div>
+<div class="section" id="plotting-with-simplot-an-overview">
+<h2><a class="toc-backref" href="#id5">Plotting with SimPlot - an overview</a><a class="headerlink" href="#plotting-with-simplot-an-overview" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plot-types-and-capabilities">
+<h3>Plot types and capabilities<a class="headerlink" href="#plot-types-and-capabilities" title="Permalink to this headline">¶</a></h3>
+<p>A simple plot program using SimPlot basically looks like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Prog1.py</span>
+<span class="kn">from</span> <span class="nn">SimPy.SimPlot</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">plt</span><span class="o">=</span><span class="n">SimPlot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plotLine</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">9</span><span class="p">]])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>When running this program, the resulting output on Windows is
+(the outside frame will look different on other platforms):</p>
+<img alt="../../_images/Prog1.png" src="../../_images/Prog1.png" />
+<p>The program shows the basic structure of any program using
+SimPlot:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Line 2 imports the plotting module,</li>
+<li>Line 3 creates and instance of the plotting class,</li>
+<li>Line 4 plots a line in an x/y coordinate system,</li>
+<li>Line 5 starts the main loop of Tk.</li>
+</ul>
+</div></blockquote>
+<p>The frame also shows a &#8216;File&#8217; menu item (when clicked, it
+offers a submenu item &#8216;Postscript&#8217; which allows saving the plot to a
+Postscript file.</p>
+<p>Method <em>plotline</em> has many name parameters with default values.
+Here is an example showing some of them (they will all be discussed
+further down in this manual:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Prog2.py</span>
+<span class="kn">from</span> <span class="nn">SimPy.SimPlot</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">plt</span><span class="o">=</span><span class="n">SimPlot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plotLine</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">9</span><span class="p">]],</span><span class="n">title</span><span class="o">=</span><span class="s">&quot;This is prettier&quot;</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">smooth</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This produces the following plot (the outside frame is not shown):</p>
+<img alt="../../_images/Prog2.png" src="../../_images/Prog2.png" />
+<p>The plot now has a title and the curve is red, wider and smooth.</p>
+<p>In addition to <em>line plots</em>, there are three other plot-types available in SimPlot,
+namely <em>stepped line plots</em>, <em>bar charts</em>, and <em>scatter diagrams</em>.</p>
+<p>Here are examples of each. First, the stepped line plot:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Prog3.py</span>
+<span class="kn">from</span> <span class="nn">SimPy.SimPlot</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">plt</span><span class="o">=</span><span class="n">SimPlot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plotStep</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">9</span><span class="p">]],</span>
+        <span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>which produces:</p>
+<img alt="../../_images/Prog3.png" src="../../_images/Prog3.png" />
+<p>A bar chart program:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Prog4.py</span>
+<span class="kn">from</span> <span class="nn">SimPy.SimPlot</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">plt</span><span class="o">=</span><span class="n">SimPlot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plotBars</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">9</span><span class="p">]],</span>
+     <span class="n">color</span><span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>which results in:</p>
+<img alt="../../_images/Prog4.png" src="../../_images/Prog4.png" />
+<p>And finally, a scatter diagram:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Prog5.py</span>
+<span class="kn">from</span> <span class="nn">SimPy.SimPlot</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">plt</span><span class="o">=</span><span class="n">SimPlot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plotScatter</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">9</span><span class="p">]],</span>
+       <span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">marker</span><span class="o">=</span><span class="s">&#39;triangle&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>and its output:</p>
+<img alt="../../_images/Prog5.png" src="../../_images/Prog5.png" />
+<p>With a bit more involved programming, it is also possible to have
+several plots in one diagram and to have several diagrams
+in one Frame (just execute SimPlot.py to get these plots):</p>
+<img alt="../../_images/Twoup.png" src="../../_images/Twoup.png" />
+<img alt="../../_images/Twodown.png" src="../../_images/Twodown.png" />
+<p><em>Note: In future versions of SimPlot, this part of the API
+will also be simplified so that it will require significantly
+less coding.</em></p>
+<div class="section" id="plotting-monitor-instances">
+<h4>Plotting Monitor instances<a class="headerlink" href="#plotting-monitor-instances" title="Permalink to this headline">¶</a></h4>
+<p>Class <em>Monitor</em> is the prime data collection tool for SimPy simulations.
+SimPlot therefore caters for easy plotting from Monitor intances.</p>
+<p>Here is an example of a simple simulation using a Monitor:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Monitorplot.py</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">generators</span>
+<span class="kn">from</span> <span class="nn">SimPy.Simulation</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">SimPy.Monitor</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">SimPy.SimPlot</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">class</span> <span class="nc">Source</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">monitor</span><span class="p">):</span>
+                <span class="n">Process</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">moni</span><span class="o">=</span><span class="n">monitor</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">arrived</span><span class="o">=</span><span class="mi">0</span>
+        <span class="k">def</span> <span class="nf">arrivalGenerator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">arrived</span><span class="o">+=</span><span class="mi">1</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">moni</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arrived</span><span class="p">)</span>
+
+<span class="n">initialize</span><span class="p">()</span>
+<span class="n">moni</span><span class="o">=</span><span class="n">Monitor</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Arrivals&quot;</span><span class="p">,</span><span class="n">ylab</span><span class="o">=</span><span class="s">&quot;nr arrived&quot;</span><span class="p">)</span>
+<span class="n">s</span><span class="o">=</span><span class="n">Source</span><span class="p">(</span><span class="n">moni</span><span class="p">)</span>
+<span class="n">activate</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="n">s</span><span class="o">.</span><span class="n">arrivalGenerator</span><span class="p">())</span>
+<span class="n">simulate</span><span class="p">(</span><span class="n">until</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">=</span><span class="n">SimPlot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plotStep</span><span class="p">(</span><span class="n">moni</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This produces:</p>
+<img alt="../../_images/Monitorplot.png" src="../../_images/Monitorplot.png" />
+</div>
+</div>
+</div>
+<div class="section" id="simple-plotting-api">
+<h2><a class="toc-backref" href="#id6">Simple plotting API</a><a class="headerlink" href="#simple-plotting-api" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="overview">
+<h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
+<p>A SimPlot application program has the following structure:</p>
+<blockquote>
+<div><ul class="simple">
+<li>instantiation of the <strong>SimPlot</strong> class</li>
+<li>call of one or more plotting methods</li>
+<li>call to the SimPlot instance&#8217;s <strong>mainloop</strong> method</li>
+</ul>
+</div></blockquote>
+<p>SimPlot exposes plotting methods at two levels, a <em>simple API</em>
+with limited capabilities but ease of use, and an <em>advanced API</em>
+with SimPlot&#8217;s full capabilities, but with more involved, verbose
+programming.</p>
+<p>This section deals with the simple API.</p>
+</div>
+<div class="section" id="simplot">
+<h3>SimPlot<a class="headerlink" href="#simplot" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="SimPlot">
+<em class="property">class </em><tt class="descname">SimPlot</tt><a class="headerlink" href="#SimPlot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>This class provides the plotting capabilities.</p>
+</div>
+<div class="section" id="plotline">
+<h3>plotLine<a class="headerlink" href="#plotline" title="Permalink to this headline">¶</a></h3>
+<dl class="classmethod">
+<dt id="SimPlot.plotLine">
+<em class="property">classmethod </em><tt class="descclassname">SimPlot.</tt><tt class="descname">plotLine</tt><big>(</big><em>values</em><span class="optional">[</span>, <em>optional parameters</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#SimPlot.plotLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a line plot from a list of tuples (or lists) or from a Monitor (any instance which has the attributes &#8216;name&#8217;, &#8216;tlab&#8217;, &#8216;ylab&#8217;).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>values</strong> (<em>list or Monitor</em>) &#8211; (<strong>mandatory</strong>) a list of two-element lists (or tuples), or a Monitor instance (any instance which has the attributes &#8216;name&#8217;, &#8216;tlab&#8217;, &#8216;ylab&#8217;)</li>
+<li><strong>windowsize</strong> &#8211; the plotting window size in pixels (tuple); default: (500,300)</li>
+<li><strong>title</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; the plot title ; if <em>values</em> is a Monitor, Monitor name is used if no <em>title</em> given</li>
+<li><strong>width</strong> (<em>integer or floating point</em>) &#8211; line drawing width, default: 1</li>
+<li><strong>color</strong> (<em>Tkinter colour type</em>) &#8211; line colour; default: &#8216;black&#8217;</li>
+<li><strong>smooth</strong> (<em>boolean</em>) &#8211; if True, makes line smooth; default: &#8220;True&#8221;</li>
+<li><strong>background</strong> (<em>Tkinter colour type</em>) &#8211; colour of plot background; default: &#8216;white&#8217;</li>
+<li><strong>xlab</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; ** : label on x-axis of plot; if <em>values</em> is a Monitor, Monitor <em>tlab</em> is taken; default: &#8216;x&#8217;</li>
+<li><strong>ylab</strong> &#8211; label on y-axis of plot (string); if <em>values</em> is a Monitor, Monitor <em>ylab</em> is taken; default: &#8216;y&#8217;</li>
+<li><strong>xaxis</strong> &#8211; layout of x-axis (None = omit x-axis; &#8216;automatic&#8217; = make x-axis at least long enough to include all x-values, using round values; &#8216;minimal&#8217; = have x-axis go <em>exactly</em> from minimal to maximal x-value provided; tuple (xlow,xhigh) = have x-axis go from xlow to xhigh); default: &#8216;automatic&#8217;</li>
+<li><strong>yaxis</strong> &#8211; layout of y-axis (None = omit y-axis; &#8216;automatic&#8217; = make y-axis at least long enough to include all y-values, using round values; &#8216;minimal&#8217; = have y-axis go <em>exactly</em> from minimal to maximal y-value provided; tuple (ylow,yhigh) = have y-axis go from ylow to yhigh); default: &#8216;automatic&#8217;</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Reference to <em>GraphBase</em> object which contains the plot.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="plotstep">
+<h3>plotStep<a class="headerlink" href="#plotstep" title="Permalink to this headline">¶</a></h3>
+<dl class="classmethod">
+<dt id="SimPlot.plotStep">
+<em class="property">classmethod </em><tt class="descclassname">SimPlot.</tt><tt class="descname">plotStep</tt><big>(</big><em>values</em><span class="optional">[</span>, <em>optional parameters</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#SimPlot.plotStep" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Generates a step plot from a list of tuples (or lists) or from a Monitor (any instance which has the attributes &#8216;name&#8217;, &#8216;tlab&#8217;, &#8216;ylab&#8217;).
+A horizontal line is drawn at a y-value until y changes, creating a step effect.</p>
+<blockquote>
+<div><blockquote>
+<div><strong>&lt;variable&gt; = &lt;SimPlotInstance&gt;.plotStep(values[,optional parameters])</strong></div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">param values:</th><td class="field-body">(<strong>mandatory</strong>) a list of two-element lists (or tuples), or a Monitor instance (any instance which has the attributes &#8216;name&#8217;, &#8216;tlab&#8217;, &#8216;ylab&#8217;)</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<dl class="docutils">
+<dt>Optional parameters with defaults:</dt>
+<dd><ul class="first last simple">
+<li><strong>windowsize=(500,300),</strong> : the plotting window size in pixels (tuple)</li>
+<li><strong>title=&#8221;&#8220;</strong> : the plot title (string); if <strong>values</strong> is a Monitor, Monitor name is used if no <strong>title</strong> given</li>
+<li><strong>width=1</strong> : line drawing width (integer or floating point)</li>
+<li><strong>color=&#8217;black&#8217;</strong> : line colour (Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>background=&#8217;white&#8217;</strong> : colour of plot background (Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>xlab=&#8217;x&#8217;</strong> : label on x-axis of plot (string); if <strong>values</strong> is a Monitor, Monitor <em>tlab</em> is taken</li>
+<li><strong>ylab=&#8217;y&#8217;</strong> : label on y-axis of plot (string); if <strong>values</strong> is a Monitor, Monitor <em>ylab</em> is taken</li>
+<li><strong>xaxis=&#8217;automatic&#8217;</strong> : layout of x-axis (None = omit x-axis; &#8216;automatic&#8217; = make x-axis at least long enough to include all x-values, using round values; &#8216;minimal&#8217; = have x-axis go <em>exactly</em> from minimal to maximal x-value provided; tuple (xlow,xhigh) = have x-axis go from xlow to xhigh)</li>
+<li><strong>yaxis=&#8217;automatic&#8217;</strong> : layout of y-axis (None = omit y-axis; &#8216;automatic&#8217; = make y-axis at least long enough to include all y-values, using round values; &#8216;minimal&#8217; = have y-axis go <em>exactly</em> from minimal to maximal y-value provided; tuple (ylow,yhigh) = have y-axis go from ylow to yhigh)</li>
+</ul>
+</dd>
+<dt>Return value:</dt>
+<dd>Reference to <em>GraphBase</em> object which contains the plot.</dd>
+</dl>
+</div>
+<div class="section" id="plotbars">
+<h3>plotBars<a class="headerlink" href="#plotbars" title="Permalink to this headline">¶</a></h3>
+<p>Generates a bar chart plot from a list of tuples (or lists) or from a Monitor.</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><p class="first"><strong>&lt;SimPlotInstance&gt;.plotBars(values[,optional parameters])</strong></p>
+<p class="last"><strong>&lt;variable&gt; = &lt;SimPlotInstance&gt;.plotBars(values[,optional parameters])</strong></p>
+</dd>
+<dt>Mandatory parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>values</strong> : a list of two-element lists (or tuples), or a Monitor instance</li>
+</ul>
+</dd>
+<dt>Optional parameters with defaults:</dt>
+<dd><ul class="first last simple">
+<li><strong>windowsize=(500,300),</strong> : the plotting window size in pixels (tuple)</li>
+<li><strong>title=&#8217;&#8216;</strong> : the plot title (string); if <strong>values</strong> is a Monitor, Monitor name is used if no <strong>title</strong> given</li>
+<li><strong>width=1</strong> : outline drawing width (integer or floating point)</li>
+<li><strong>color=&#8217;black&#8217;</strong> : outline colour (Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>fillcolor=&#8217;black&#8217;</strong> : colour with which bars are filled (Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>fillstyle=&#8217;&#8216;</strong> : density of fill (default=100%; Tkinter bitmap)</li>
+<li><strong>outline=&#8217;black&#8221;</strong> : colour of bar outline ((Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>background=&#8217;white&#8217;</strong> : colour of plot background (Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>xlab=&#8217;x&#8217;</strong> : label on x-axis of plot (string); if <strong>values</strong> is a Monitor, Monitor <em>tlab</em> is taken</li>
+<li><strong>ylab=&#8217;y&#8217;</strong> : label on y-axis of plot (string); if <strong>values</strong> is a Monitor, Monitor <em>ylab</em> is taken</li>
+<li><strong>xaxis=&#8217;automatic&#8217;</strong> : layout of x-axis (None = omit x-axis; &#8216;automatic&#8217; = make x-axis at least long enough to include all x-values, using round values; &#8216;minimal&#8217; = have x-axis go <em>exactly</em> from minimal to maximal x-value provided; tuple (xlow,xhigh) = have x-axis go from xlow to xhigh)</li>
+<li><strong>yaxis=&#8217;automatic&#8217;</strong> : layout of y-axis (None = omit y-axis; &#8216;automatic&#8217; = make y-axis at least long enough to include all y-values, using round values; &#8216;minimal&#8217; = have y-axis go <em>exactly</em> from minimal to maximal y-value provided; tuple (ylow,yhigh) = have y-axis go from ylow to yhigh)</li>
+</ul>
+</dd>
+<dt>Return value:</dt>
+<dd>Reference to <em>GraphBase</em> object which contains the plot.</dd>
+</dl>
+</div>
+<div class="section" id="plothistogram">
+<h3>plotHistogram<a class="headerlink" href="#plothistogram" title="Permalink to this headline">¶</a></h3>
+<p>Generates a histogram plot from a Histogram or a Histogram-like list or tuple.
+A SimPy Histogram instance is a list with items of two elements. It has
+n+2 bins of equal width, sorted by the first element, containing integer values
+== the counts of the bins. The first bin is the &#8216;under&#8217; bin, the last the
+&#8216;over&#8217; bin.
+Histogram objects are produced from Monitor objects by calling the Monitor
+method <em>histogram()</em>.</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><p class="first"><strong>&lt;SimPlotInstance&gt;.plotHistogram(values[,optional parameters])</strong></p>
+<p class="last"><strong>&lt;variable&gt; = &lt;SimPlotInstance&gt;.plotHistogram(values[,optional parameters])</strong></p>
+</dd>
+<dt>Mandatory parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>values</strong> : a list of two-element lists (or tuples), or a Monitor instance</li>
+</ul>
+</dd>
+<dt>Optional parameters with defaults:</dt>
+<dd><ul class="first last simple">
+<li><strong>windowsize=(500,300)</strong> : the plotting window size in pixels (tuple)</li>
+<li><strong>title=&#8217;&#8216;</strong> : the plot title (string); if <strong>values</strong> is a Monitor, Monitor name is used if no <strong>title</strong> given</li>
+<li><strong>width=1</strong> : line drawing width (integer or floating point)</li>
+<li><strong>color=&#8217;black&#8217;</strong> : line colour (Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>background=&#8217;white&#8217;</strong> : colour of plot background (Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>xlab=&#8217;x&#8217;</strong> : label on x-axis of plot (string)</li>
+<li><strong>ylab=&#8217;y&#8217;</strong> : label on y-axis of plot (string)</li>
+<li><strong>xaxis=&#8217;automatic&#8217;</strong> : layout of x-axis (None = omit x-axis; &#8216;automatic&#8217; = make x-axis at least long enough to include all x-values, using round values; &#8216;minimal&#8217; = have x-axis go <em>exactly</em> from minimal to maximal x-value provided; tuple (xlow,xhigh) = have x-axis go from xlow to xhigh)</li>
+<li><strong>yaxis=&#8217;automatic&#8217;</strong> : layout of y-axis (None = omit y-axis; &#8216;automatic&#8217; = make y-axis at least long enough to include all y-values, using round values; &#8216;minimal&#8217; = have y-axis go <em>exactly</em> from minimal to maximal y-value provided; tuple (ylow,yhigh) = have y-axis go from ylow to yhigh)</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="plotscatter">
+<h3>plotScatter<a class="headerlink" href="#plotscatter" title="Permalink to this headline">¶</a></h3>
+<p>Generates a scatter diagram plot from a list of tuples (or lists) or from a Monitor.</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><p class="first"><strong>&lt;SimPlotInstance&gt;.plotScatter(values[,optional parameters])</strong></p>
+<p class="last"><strong>variable = &lt;SimPlotInstance&gt;. plotScatter(values[,optional parameters])</strong></p>
+</dd>
+<dt>Mandatory parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>values</strong> : a list of two-element lists (or tuples), or a Monitor instance</li>
+</ul>
+</dd>
+<dt>Optional parameters with defaults:</dt>
+<dd><ul class="first last simple">
+<li><strong>windowsize=(500,300),</strong> : the plotting window size in pixels (tuple)</li>
+<li><strong>title=&#8217;&#8216;</strong> : the plot title (string); if <strong>values</strong> is a Monitor, Monitor name is used if no <strong>title</strong> given</li>
+<li><strong>marker=&#8217;circle&#8217;</strong> : symbol type (literal; values supported: &#8216;circle, &#8216;dot&#8217;, &#8216;square&#8217;, &#8216;triangle, &#8216;triangle_down&#8217;, &#8216;cross&#8217;, &#8216;plus&#8217;)</li>
+<li><strong>width=1</strong> : line drawing width (integer or floating point)</li>
+<li><strong>color=&#8217;black&#8217;</strong> : line colour (Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>fillcolor=&#8217;black&#8217;</strong> : colour with which bars are filled (Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>fillstyle=&#8217;&#8216;</strong> : density of fill (default=100%; Tkinter bitmap)</li>
+<li><strong>outline=&#8217;black&#8217;</strong> : colour of marker outline ((Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>background=&#8217;white&#8217;</strong> : colour of plot background (Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>xlab=&#8217;x&#8217;</strong> : label on x-axis of plot (string); if <strong>values</strong> is a Monitor, Monitor <em>tlab</em> is taken</li>
+<li><strong>ylab=&#8217;y&#8217;</strong> : label on y-axis of plot (string); if <strong>values</strong> is a Monitor, Monitor <em>ylab</em> is taken</li>
+<li><strong>xaxis=&#8217;automatic&#8217;</strong> : layout of x-axis (None = omit x-axis; &#8216;automatic&#8217; = make x-axis at least long enough to include all x-values, using round values; &#8216;minimal&#8217; = have x-axis go <em>exactly</em> from minimal to maximal x-value provided; tuple (xlow,xhigh) = have x-axis go from xlow to xhigh)</li>
+<li><strong>yaxis=&#8217;automatic&#8217;</strong> : layout of y-axis (None = omit y-axis; &#8216;automatic&#8217; = make y-axis at least long enough to include all y-values, using round values; &#8216;minimal&#8217; = have y-axis go <em>exactly</em> from minimal to maximal y-value provided; tuple (ylow,yhigh) = have y-axis go from ylow to yhigh)</li>
+</ul>
+</dd>
+<dt>Return value:</dt>
+<dd>Reference to <em>GraphBase</em> object which contains the plot.</dd>
+</dl>
+</div>
+<div class="section" id="postscr">
+<h3>postscr<a class="headerlink" href="#postscr" title="Permalink to this headline">¶</a></h3>
+<p>Saves Postscript output from a plot to a file. After e.g. <tt class="docutils literal"><span class="pre">aPlot=plotLine([0,1],[3,4])</span></tt>, <tt class="docutils literal"><span class="pre">aPlot.postscr(&quot;c:\\myplot.ps&quot;)</span></tt>
+outputs the line plot in Postscript to file c:\myplot.ps.</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><strong>&lt;plotinstance&gt;.postscr([optional parameter])</strong> (with &lt;plotinstance&gt; being a reference to the <em>GraphBase</em> object which contains the plot)</dd>
+<dt>Mandatory parameters:</dt>
+<dd>None.</dd>
+<dt>Optional parameters with defaults:</dt>
+<dd><ul class="first last simple">
+<li><strong>&#8220;&lt;filename&gt;&#8221;</strong> : name of file (complete path) to which Postscript output is written. If omitted, a dialog asking the user for a filename pops up.</li>
+</ul>
+</dd>
+<dt>Return value:</dt>
+<dd>None.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="advanced-plotting-api">
+<h2><a class="toc-backref" href="#id7">Advanced plotting API</a><a class="headerlink" href="#advanced-plotting-api" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Overview<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>The advanced SimPlot API is more verbose than the simple one, but it offers more flexibility and power. The detailed structure of a program using that API is:</p>
+<ol class="arabic simple">
+<li>make an instance of SimPlot (this initializes Tk and generates a Tk Toplevel container &lt;instance&gt;.root which points at the Tk object.)</li>
+<li>(optional) make other Tk container(s)</li>
+<li>(optional) give the container a title</li>
+<li>make one or more plot objects (the lines or other figures to plot)</li>
+<li>put the plot objects into a GraphObject (this does the necessary scaling)</li>
+<li>make a Tk container (e.g. a Frame widget) in the previous container (from step 1 or 2)</li>
+<li>make a background (with title, axes, frame, etc.) in that container for the GraphObject to be drawn against (i.e., create the graph widget and associate the GraphObject with it)</li>
+<li>instruct the Tk geometry manager (pack or grid) where to put the background in the Tk container</li>
+<li>draw the GraphObject against the background</li>
+<li>instruct the Tk geometry manager concerning the container from step 6</li>
+<li>(optional) save plot as Postscript file</li>
+<li>start the Tk mainloop</li>
+</ol>
+<p>An example:</p>
+<div class="highlight-python"><pre># AdvancedAPI.py
+from SimPy. SimPlot import *
+plt=SimPlot()                                       # step 1
+plt.root.title("Advanced API example")              # step 3
+line=plt.makeLine([[0,42],[1,1],[4,16]])            # step 4
+bar=plt.makeBars([[0,42],[1,1],[4,16]],
+                 color='blue')                      # step 4
+sym=plt.makeSymbols([[1,1]],marker="triangle",
+                    size=3,fillcolor="red")         # step 4
+obj=plt.makeGraphObjects([line,bar,sym])            # step 5
+frame=Frame(plt.root)                               # step 6
+graph=plt.makeGraphBase(frame,500,300,
+                        title="Line and bars")      # step 7
+graph.pack()                                        # step 8
+graph.draw(obj)                                     # step 9
+frame.pack()                                        # step 10
+graph.postscr()                                     # step 11
+plt.mainloop()                                      # step 12</pre>
+</div>
+<p>Which generates:</p>
+<img alt="../../_images/AdvancedAPI.png" src="../../_images/AdvancedAPI.png" />
+<p>Clearly, this level API is more verbose, but allows putting several diagrams with different
+plot types into one plot, or putting putting several plots into one frame (side by side, vertically,
+or in table fashion).</p>
+</div>
+<div class="section" id="title">
+<h3>title<a class="headerlink" href="#title" title="Permalink to this headline">¶</a></h3>
+<p>Assign a title to appear in the container&#8217;s title bar. (This is a method exposed by a Tk Toplevel container.)</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><strong>&lt;rootInstance&gt;.title(title)</strong></dd>
+<dt>Mandatory parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>title</strong> : the title to appear in the container&#8217;s title bar (string)</li>
+</ul>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>None.</dd>
+<dt>Return value:</dt>
+<dd>None.</dd>
+</dl>
+</div>
+<div class="section" id="makeline">
+<h3>makeLine<a class="headerlink" href="#makeline" title="Permalink to this headline">¶</a></h3>
+<p>Generates a line plot object from a list of tuples (or lists).</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><strong>&lt;variable&gt; = &lt;SimPlotInstance&gt;.makeLine(values[,optional parameters])</strong></dd>
+<dt>Mandatory parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>values</strong> : a list of two-element lists (or tuples)</li>
+</ul>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>color = &#8216;black&#8217;</strong> : line colour (Tk colour value)</li>
+<li><strong>width = 1</strong> : line width (integer or float)</li>
+<li><strong>smooth = False</strong> : smooth line if True (boolean)</li>
+<li><strong>splinesteps = 12</strong> : number of spline steps for smoothing line (integer); the higher, the better the line follows the points provided</li>
+</ul>
+</dd>
+<dt>Return value:</dt>
+<dd>Reference to a line plot object (GraphLine)</dd>
+</dl>
+</div>
+<div class="section" id="makestep">
+<h3>makeStep<a class="headerlink" href="#makestep" title="Permalink to this headline">¶</a></h3>
+<p>Generates a line plot object from a list of tuples (or lists).
+A horizontal line is generated at a y-value until y changes, creating a step effect.</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><strong>&lt;variable&gt; = &lt;SimPlotInstance&gt;.makeStep(values[,optional parameters])</strong></dd>
+<dt>Mandatory parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>values</strong> : a list of two-element lists (or tuples)</li>
+</ul>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>color = &#8216;black&#8217;</strong> : line colour (Tk colour value)</li>
+<li><strong>width = 1</strong> : line width (integer or float)</li>
+</ul>
+</dd>
+<dt>Return value:</dt>
+<dd>Reference to a line plot object (GraphLine)</dd>
+</dl>
+</div>
+<div class="section" id="makesymbols">
+<h3>makeSymbols<a class="headerlink" href="#makesymbols" title="Permalink to this headline">¶</a></h3>
+<p>Generates a scatter diagram plot object with markers from a list of tuples (or lists).</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><strong>&lt;variable&gt; = &lt;SimPlotInstance&gt;.makeSymbols(values[,optional parameters])</strong></dd>
+<dt>Mandatory parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>values</strong> : a list of two-element lists (or tuples)</li>
+</ul>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>marker=&#8217;circle&#8217;</strong> : symbol type (literal; values supported: &#8216;circle, &#8216;dot&#8217;, &#8216;square&#8217;, &#8216;triangle, &#8216;triangle_down&#8217;, &#8216;cross&#8217;, &#8216;plus&#8217;)</li>
+<li><strong>width=1</strong> : line drawing width (integer or floating point)</li>
+<li><strong>color=&#8217;black&#8217;</strong> : line colour (Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>fillcolor=&#8217;black&#8217;</strong> : colour with which bars are filled (Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>fillstyle=&#8217;&#8216;</strong> : density of fill (default=100%; Tkinter bitmap)</li>
+<li><strong>outline=&#8217;black&#8217;</strong> : colour of marker outline ((Tkinter colour type; see section on Colours in SimPlot)</li>
+</ul>
+</dd>
+<dt>Return value:</dt>
+<dd>Reference to a scatter plot object (GraphSymbols)</dd>
+</dl>
+</div>
+<div class="section" id="makebars">
+<h3>makeBars<a class="headerlink" href="#makebars" title="Permalink to this headline">¶</a></h3>
+<p>Generates a bar chart plot object with markers from a list of tuples (or lists).</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><strong>&lt;variable&gt; = &lt;SimPlotInstance&gt;.makeBars(values[,optional parameters])</strong></dd>
+<dt>Mandatory parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>values</strong> : a list of two-element lists (or tuples)</li>
+</ul>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>width=1</strong> : width of bars (integer or floating point)</li>
+<li><strong>color=&#8217;black&#8217;</strong> : bar colour (Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>fillcolor=&#8217;black&#8217;</strong> : colour with which bars are filled (Tkinter colour type; see section on Colours in SimPlot)</li>
+<li><strong>fillstyle=&#8217;&#8216;</strong> : density of fill (default=100%; Tkinter bitmap)</li>
+<li><strong>outline=&#8217;black&#8221;</strong> : colour of bar outline ((Tkinter colour type; see section on Colours in SimPlot)</li>
+</ul>
+</dd>
+<dt>Return value:</dt>
+<dd>Reference to a bar chart plot object (GraphSymbols)</dd>
+</dl>
+</div>
+<div class="section" id="makehistogram">
+<h3>makeHistogram<a class="headerlink" href="#makehistogram" title="Permalink to this headline">¶</a></h3>
+<p>Generates a histogram plot from a Histogram or a Histogram-like list or tuple.
+A SimPy Histogram instance is a list with items of two elements. It has
+n+2 bins of equal width, sorted by the first element, containing integer values
+== the counts of the bins. The first bin is the &#8216;under&#8217; bin, the last the
+&#8216;over&#8217; bin.
+Histogram objects are produced from Monitor objects by calling the Monitor
+method <em>histogram()</em>.</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><strong>&lt;variable&gt; = &lt;SimPlotInstance&gt;.makeBars(values[,optional parameters])</strong></dd>
+<dt>Mandatory parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>values</strong> : a Histogram-like object</li>
+</ul>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>width=1</strong> : width of line (integer or floating point)</li>
+<li><strong>color=&#8217;black&#8217;</strong> : line colour (Tkinter colour type; see section on Colours in SimPlot)</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="makegraphobjects">
+<h3>makeGraphObjects<a class="headerlink" href="#makegraphobjects" title="Permalink to this headline">¶</a></h3>
+<p>Combines one or mor plot objects into one plottable GraphObject.</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><strong>&lt;variable&gt; = &lt;SimPlotInstance&gt;.makeGraphObjects(list_of_plotObjects)</strong></dd>
+<dt>Mandatory parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>list_of_plotObjects</strong> : a list of plot objects</li>
+</ul>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>None</dd>
+<dt>Return value:</dt>
+<dd>Reference to a GraphObject</dd>
+</dl>
+</div>
+<div class="section" id="makegraphbase">
+<h3>makeGraphBase<a class="headerlink" href="#makegraphbase" title="Permalink to this headline">¶</a></h3>
+<p>Generates a canvas widget in its Tk container widget (such as a Frame) with the plot&#8217;s background (title, axes, axis labels).</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><strong>&lt;variable&gt; = &lt;SimPlotInstance&gt;.makeGraphBase(master, width, height [,optional parameters])</strong></dd>
+<dt>Mandatory parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>master</strong> : container widget for graph widget</li>
+<li><strong>width</strong> : width of graph widget in pixels (positive integer)</li>
+<li><strong>height</strong> : height of graph widget in pixels (positive integer)</li>
+</ul>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>background=&#8217;white&#8217;</strong> : colour of plot background (Tk colour value)</li>
+<li><strong>title=&#8221;&#8220;</strong> : title of plot (string)</li>
+<li><strong>xtitle=&#8217;&#8216;</strong> : label on x-axis (string)</li>
+<li><strong>ytitle=&#8217;&#8216;</strong> : label on y-axis (string)</li>
+</ul>
+</dd>
+<dt>Return value:</dt>
+<dd>Reference to a GraphBase object (graph widget)</dd>
+</dl>
+</div>
+<div class="section" id="pack">
+<h3>pack<a class="headerlink" href="#pack" title="Permalink to this headline">¶</a></h3>
+<p>Controls how graph widget is arranged in its master container.
+(Inherited from Tk Packer geometry manager.)</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><strong>&lt;GraphBaseInstance&gt;.pack([optional parameters])</strong></dd>
+<dt>Mandatory parameters:</dt>
+<dd>None.</dd>
+<dt>Optional parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>side</strong> : where to place graph widget (side=LEFT: to the left; side=TOP: at the top; Tk Packer literals)</li>
+<li><strong>fill</strong> : controls whether graph fills available space in window (fill=BOTH: fills in both directions; fill=X: horizontal stretching; fill=Y: vertical stretching)</li>
+<li><strong>expand=NO</strong> : controls whether Packer expands graph widget when window is resized (expand=TRUE: widget may expand to fill available space)</li>
+</ul>
+</dd>
+<dt>Return value:</dt>
+<dd>None</dd>
+</dl>
+</div>
+<div class="section" id="draw">
+<h3>draw<a class="headerlink" href="#draw" title="Permalink to this headline">¶</a></h3>
+<p>Draws the plot background and the lines/curves in it.</p>
+<p>Call:</p>
+<blockquote>
+<div><strong>&lt;GraphBaseInstance&gt;.draw(graph,[optional parameters])</strong></div></blockquote>
+<dl class="docutils">
+<dt>Mandatory parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>graphics</strong> : graph widget (GraphBase) instance</li>
+</ul>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>xaxis=&#8217;automatic&#8217;</strong> : controls appearance of x-axis (None: no x-axis; &#8220;minimal&#8221;: axis runs exactly from minimal to maximal x-value; &#8220;automatic&#8221; : x-axis starts at 0 and includes maximal x-value; tuple (xlow,xhigh) = have x-axis go from xlow to xhigh)</li>
+<li><strong>yaxis=&#8217;automatic&#8217;</strong> : controls appearance of y-axis (None: no y-axis;&#8221;minimal&#8221;: axis runs exactly from minimal to maximal y-value; &#8220;automatic&#8221; : y-axis starts at 0 and includes maximal y-value; tuple (ylow,yhigh) = have y-axis go from ylow to yhigh</li>
+</ul>
+</dd>
+<dt>Return value:</dt>
+<dd>None</dd>
+</dl>
+</div>
+<div class="section" id="id2">
+<h3>postscr<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>After call to draw , saves Postscript output from a plot to a file.</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><strong>&lt;GraphBaseInstance&gt;.postscr([optional parameter])</strong></dd>
+<dt>Mandatory parameters:</dt>
+<dd>None.</dd>
+<dt>Optional parameters with defaults:</dt>
+<dd><ul class="first last simple">
+<li><strong>&#8220;filename&#8221;</strong> : name of file (complete path) to which Postscript output is written. If omitted, a dialog asking the user for a filename pops up.</li>
+</ul>
+</dd>
+<dt>Return value:</dt>
+<dd>None.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="colours-in-simplot">
+<h2><a class="toc-backref" href="#id8">Colours in SimPlot</a><a class="headerlink" href="#colours-in-simplot" title="Permalink to this headline">¶</a></h2>
+<p>Colours in SimPlot are defined by Tk. The Tk colour model is RGB. The simplest way to identify a colour
+is to use one of the hundreds of Tk-defined literals such as &#8220;black&#8221;, &#8220;aquamarine&#8221;, or even &#8220;BlanchedAlmond&#8221;.
+See the <a class="reference external" href="../../_static/Tkcolors.htm">Tk colour page</a> for definitions.</p>
+<p>$Revision: 361 $ $Date: 2010-01-11 00:58:57 +1300 (Mon, 11 Jan 2010) $</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/sm_SimPy_Logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">SimPlot Manual</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#plotting-with-simplot-an-overview">Plotting with SimPlot - an overview</a><ul>
+<li><a class="reference internal" href="#plot-types-and-capabilities">Plot types and capabilities</a><ul>
+<li><a class="reference internal" href="#plotting-monitor-instances">Plotting Monitor instances</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#simple-plotting-api">Simple plotting API</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#simplot">SimPlot</a></li>
+<li><a class="reference internal" href="#plotline">plotLine</a></li>
+<li><a class="reference internal" href="#plotstep">plotStep</a></li>
+<li><a class="reference internal" href="#plotbars">plotBars</a></li>
+<li><a class="reference internal" href="#plothistogram">plotHistogram</a></li>
+<li><a class="reference internal" href="#plotscatter">plotScatter</a></li>
+<li><a class="reference internal" href="#postscr">postscr</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#advanced-plotting-api">Advanced plotting API</a><ul>
+<li><a class="reference internal" href="#id1">Overview</a></li>
+<li><a class="reference internal" href="#title">title</a></li>
+<li><a class="reference internal" href="#makeline">makeLine</a></li>
+<li><a class="reference internal" href="#makestep">makeStep</a></li>
+<li><a class="reference internal" href="#makesymbols">makeSymbols</a></li>
+<li><a class="reference internal" href="#makebars">makeBars</a></li>
+<li><a class="reference internal" href="#makehistogram">makeHistogram</a></li>
+<li><a class="reference internal" href="#makegraphobjects">makeGraphObjects</a></li>
+<li><a class="reference internal" href="#makegraphbase">makeGraphBase</a></li>
+<li><a class="reference internal" href="#pack">pack</a></li>
+<li><a class="reference internal" href="#draw">draw</a></li>
+<li><a class="reference internal" href="#id2">postscr</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#colours-in-simplot">Colours in SimPlot</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../../SimPy_Libraries.html"
+                        title="previous chapter">SimPy Libraries</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../GUIManual/SimGUImanual.html"
+                        title="next chapter">SimGUI Manual</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/Manuals/PlotManual/ManualPlotting.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../GUIManual/SimGUImanual.html" title="SimGUI Manual"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../../SimPy_Libraries.html" title="SimPy Libraries"
+             >previous</a> |</li>
+        <li><a href="../../index.html">SimPy v2.2 documentation</a> &raquo;</li>
+          <li><a href="../../SimPy_Libraries.html" >SimPy Libraries</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2002-2011, Klaus Müller, Tony Vignaux, Ontje Lünsdorf, Stefan Scherfke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

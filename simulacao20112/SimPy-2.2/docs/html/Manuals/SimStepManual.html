@@ -1,0 +1,427 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Simulation with Event Stepping &mdash; SimPy v2.2 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="SimPy v2.2 documentation" href="../index.html" />
+    <link rel="up" title="Using SimPy" href="../Using_SimPy.html" />
+    <link rel="next" title="SimPy Libraries" href="../SimPy_Libraries.html" />
+    <link rel="prev" title="Simulation with Real Time Synchronization" href="SimRTManual.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../SimPy_Libraries.html" title="SimPy Libraries"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="SimRTManual.html" title="Simulation with Real Time Synchronization"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">SimPy v2.2 documentation</a> &raquo;</li>
+          <li><a href="../Using_SimPy.html" accesskey="U">Using SimPy</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="simulation-with-event-stepping">
+<h1><a class="toc-backref" href="#id1">Simulation with Event Stepping</a><a class="headerlink" href="#simulation-with-event-stepping" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Authors:</th><td class="field-body"><ul class="first simple">
+<li>Klaus Muller &lt;<a class="reference external" href="mailto:Muller&#37;&#52;&#48;users&#46;sourceforge&#46;net">Muller<span>&#64;</span>users<span>&#46;</span>sourceforge<span>&#46;</span>net</a>&gt;</li>
+<li>Tony Vignaux &lt;<a class="reference external" href="mailto:Vignaux&#37;&#52;&#48;users&#46;sourceforge&#46;net">Vignaux<span>&#64;</span>users<span>&#46;</span>sourceforge<span>&#46;</span>net</a>&gt;</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">SimPy release:</th><td class="field-body"><p class="first">2.2</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Web-site:</th><td class="field-body"><p class="first"><a class="reference external" href="http://simpy.sourceforge.net/">http://simpy.sourceforge.net/</a></p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Python-Version:</th><td class="field-body"><p class="first">2.3 and later (not 3.0)</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Revision:</th><td class="field-body"><p class="first">$Revision: 297 $</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body"><p class="first last">$Date: 2009-03-31 02:24:46 +1300 (Tue, 31 Mar 2009) $</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#simulation-with-event-stepping" id="id1">Simulation with Event Stepping</a><ul>
+<li><a class="reference internal" href="#introduction" id="id2">Introduction</a></li>
+<li><a class="reference internal" href="#simulationstep-overview" id="id3">SimulationStep overview</a></li>
+<li><a class="reference internal" href="#the-simulationstep-api" id="id4">The SimulationStep API</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>This manual describes <strong>SimulationStep</strong>, a SimPy module which supports
+stepping through a simulation model event by event.</p>
+<div class="section" id="introduction">
+<h2><a class="toc-backref" href="#id2">Introduction</a><a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>SimulationStep can assist with debugging models, interacting with them on
+an event-by-event basis, getting event-by-event output from a model (e.g.
+for plotting purposes), etc.</p>
+<p>SimulationStep is a derivative of the Simulation module. Over and above
+the capabilities provided by Simulation, SimulationStep supports stepping
+through a simulation model event by event. It caters for:</p>
+<blockquote>
+<div><ul class="simple">
+<li>running a simulation model, with calling a user-defined procedure after every event,</li>
+<li>running a simulation model one event at a time by repeated calls,</li>
+<li>starting and stopping the event stepping mode under program control.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="simulationstep-overview">
+<h2><a class="toc-backref" href="#id3">SimulationStep overview</a><a class="headerlink" href="#simulationstep-overview" title="Permalink to this headline">¶</a></h2>
+<p>Here is a simple program which shows basic event stepping capabilities:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## Stepping1.py</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">generators</span>
+<span class="kn">from</span> <span class="nn">SimPy.SimulationStep</span> <span class="kn">import</span> <span class="o">*</span>                  <span class="c"># (1)</span>
+
+<span class="k">def</span> <span class="nf">callbackTimeTrace</span><span class="p">():</span>                            <span class="c"># (2)</span>
+    <span class="sd">&quot;&quot;&quot;Prints event times</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">print</span> <span class="s">&quot;at time=</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">now</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">Man</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&quot;got up&quot;</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="mi">1</span>
+        <span class="k">print</span> <span class="s">&quot;got to door&quot;</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="mi">10</span>
+        <span class="k">print</span> <span class="s">&quot;got to mail box&quot;</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="mi">10</span>
+        <span class="k">print</span> <span class="s">&quot;got home again&quot;</span>
+
+<span class="c">#trace event times</span>
+<span class="n">initialize</span><span class="p">()</span>
+<span class="n">otto</span><span class="o">=</span><span class="n">Man</span><span class="p">()</span>
+<span class="n">activate</span><span class="p">(</span><span class="n">otto</span><span class="p">,</span><span class="n">otto</span><span class="o">.</span><span class="n">walk</span><span class="p">())</span>
+<span class="n">startStepping</span><span class="p">()</span>                                     <span class="c"># (3)</span>
+<span class="n">simulate</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">callbackTimeTrace</span><span class="p">,</span><span class="n">until</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>      <span class="c"># (4)</span>
+</pre></div>
+</div>
+<p>A trivial simulation model, but with event stepping:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>import the stepping version of Simulation</li>
+<li>define a procedure which gets called after every event</li>
+<li>switch into event stepping mode</li>
+<li>run the model with event callback to the procedure defined at (2); <tt class="docutils literal"><span class="pre">simulate</span></tt> in SimulationStep has an extra named parameter, <tt class="docutils literal"><span class="pre">callback</span></tt>.</li>
+</ol>
+</div></blockquote>
+<p>Running it produces this output:</p>
+<div class="highlight-python"><pre>got up
+at time=0
+got to door
+at time=1
+got to mail box
+at time=11
+got home again
+at time=21
+at time=21</pre>
+</div>
+<p>The callback outputs the simulation time after every event.</p>
+<p>Here is another example, the same model, but now with the user getting control back after every
+event:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## Stepping2.py</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">generators</span>
+<span class="kn">from</span> <span class="nn">SimPy.SimulationStep</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">def</span> <span class="nf">callbackUserControl</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Allows user to control stepping</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span><span class="o">=</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;[Time=</span><span class="si">%s</span><span class="s">] Select one: End run (e), Continue stepping (s), Run to end (r)= &quot;</span><span class="o">%</span><span class="n">now</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">==</span><span class="s">&quot;e&quot;</span><span class="p">:</span>
+        <span class="n">stopSimulation</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">a</span><span class="o">==</span><span class="s">&quot;s&quot;</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stopStepping</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">Man</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&quot;got up&quot;</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="mi">1</span>
+        <span class="k">print</span> <span class="s">&quot;got to door&quot;</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="mi">10</span>
+        <span class="k">print</span> <span class="s">&quot;got to mail box&quot;</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="mi">10</span>
+        <span class="k">print</span> <span class="s">&quot;got home again&quot;</span>
+<span class="c">#allow user control</span>
+<span class="n">initialize</span><span class="p">()</span>
+<span class="n">otto</span><span class="o">=</span><span class="n">Man</span><span class="p">()</span>
+<span class="n">activate</span><span class="p">(</span><span class="n">otto</span><span class="p">,</span><span class="n">otto</span><span class="o">.</span><span class="n">walk</span><span class="p">())</span>
+<span class="n">startStepping</span><span class="p">()</span>
+<span class="n">simulate</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">callbackUserControl</span><span class="p">,</span><span class="n">until</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Its interactive output looks like this:</p>
+<div class="highlight-python"><pre>got up
+[Time=0] Select one: End run (e), Continue stepping (s), Run to end (r)= s
+got to door
+[Time=1] Select one: End run (e), Continue stepping (s), Run to end (r)= s
+got to mail box
+[Time=11] Select one: End run (e), Continue stepping (s), Run to end (r)= s
+got home again
+[Time=21] Select one: End run (e), Continue stepping (s), Run to end (r)= s
+[Time=21] Select one: End run (e), Continue stepping (s), Run to end (r)= s</pre>
+</div>
+<p>or this (the user stopped stepping mode at time=1):</p>
+<div class="highlight-python"><pre>got up
+[Time=0] Select one: End run (e), Continue stepping (s), Run to end (r)= s
+got to door
+[Time=1] Select one: End run (e), Continue stepping (s), Run to end (r)= r
+got to mail box
+got home again</pre>
+</div>
+<p>If one wants to run a tested/debugged model full speed, i.e. without stepping,
+one can write a program as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## Stepping2Fast.py</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">generators</span>
+<span class="k">if</span> <span class="n">__debug__</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">SimPy.SimulationStep</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="k">else</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">SimPy.Simulation</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">def</span> <span class="nf">callbackUserControl</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Allows user to control stepping</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">__debug__</span><span class="p">:</span>
+                <span class="n">a</span><span class="o">=</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;[Time=</span><span class="si">%s</span><span class="s">] Select one: End run (e), Continue stepping (s),</span><span class="se">\</span>
+<span class="s">                     Run to end (r)= &quot;</span><span class="o">%</span><span class="n">now</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">a</span><span class="o">==</span><span class="s">&quot;e&quot;</span><span class="p">:</span>
+                    <span class="n">stopSimulation</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="n">a</span><span class="o">==</span><span class="s">&quot;s&quot;</span><span class="p">:</span>
+                    <span class="k">return</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">stopStepping</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">Man</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&quot;got up&quot;</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="mi">1</span>
+        <span class="k">print</span> <span class="s">&quot;got to door&quot;</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="mi">10</span>
+        <span class="k">print</span> <span class="s">&quot;got to mail box&quot;</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="mi">10</span>
+        <span class="k">print</span> <span class="s">&quot;got home again&quot;</span>
+<span class="c">#allow user control if debugging</span>
+<span class="n">initialize</span><span class="p">()</span>
+<span class="n">otto</span><span class="o">=</span><span class="n">Man</span><span class="p">()</span>
+<span class="n">activate</span><span class="p">(</span><span class="n">otto</span><span class="p">,</span><span class="n">otto</span><span class="o">.</span><span class="n">walk</span><span class="p">())</span>
+<span class="k">if</span> <span class="n">__debug__</span><span class="p">:</span>
+        <span class="n">startStepping</span><span class="p">()</span>
+        <span class="n">simulate</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">callbackUserControl</span><span class="p">,</span><span class="n">until</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+        <span class="n">simulate</span><span class="p">(</span><span class="n">until</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If one runs this with the Python command line option &#8216;-O&#8217;, any
+statement starting with <tt class="docutils literal"><span class="pre">if</span> <span class="pre">__debug__:</span></tt> is ignored/skipped by the
+Python interpreter.</p>
+</div>
+<div class="section" id="the-simulationstep-api">
+<h2><a class="toc-backref" href="#id4">The SimulationStep API</a><a class="headerlink" href="#the-simulationstep-api" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="structure">
+<h3>Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h3>
+<p>Basically, SimulationStep has the same API as Simulation, but with
+the following additions and changes:</p>
+<div class="highlight-python"><pre>def startStepping()         **new**
+def stopStepping()          **new**
+def simulate()              **changed**
+def simulateStep()          **new**</pre>
+</div>
+</div>
+<div class="section" id="startstepping">
+<h3><strong>startStepping</strong><a class="headerlink" href="#startstepping" title="Permalink to this headline">¶</a></h3>
+<p>Starts the event-stepping.</p>
+<p>Call:</p>
+<blockquote>
+<div><strong>startStepping()</strong></div></blockquote>
+<dl class="docutils">
+<dt>Mandatory parameters:</dt>
+<dd>None.</dd>
+<dt>Optional parameters:</dt>
+<dd>None</dd>
+<dt>Return value:</dt>
+<dd>None.</dd>
+</dl>
+</div>
+<div class="section" id="stopstepping">
+<h3><strong>stopStepping</strong><a class="headerlink" href="#stopstepping" title="Permalink to this headline">¶</a></h3>
+<p>Stops event-stepping.</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><strong>stopStepping()</strong></dd>
+<dt>Mandatory parameters:</dt>
+<dd>None</dd>
+<dt>Optional parameters:</dt>
+<dd>None</dd>
+<dt>Return value:</dt>
+<dd>None</dd>
+</dl>
+</div>
+<div class="section" id="simulate">
+<h3><strong>simulate</strong><a class="headerlink" href="#simulate" title="Permalink to this headline">¶</a></h3>
+<p>Runs a simulation with callback to a user-defined function after each event, if stepping is turned on.
+By default, stepping is switched off.</p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><strong>simulate(callback=&lt;proc&gt;,until=&lt;endtime&gt;)</strong></dd>
+<dt>Mandatory parameters:</dt>
+<dd>None</dd>
+<dt>Optional parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>until = 0</strong>: the simulation time until which the simulation is to run (positive floating point or integer number)</li>
+<li><strong>callback = lambda:None</strong>: the function to be called after every event (function reference)</li>
+</ul>
+</dd>
+<dt>Return value:</dt>
+<dd>The simulation status at exit (string)</dd>
+</dl>
+</div>
+<div class="section" id="simulatestep">
+<h3><strong>simulateStep</strong><a class="headerlink" href="#simulatestep" title="Permalink to this headline">¶</a></h3>
+<p>Runs a simulation for one event, with (optional) callback to a user-defined function
+after the event, if stepping is turned on. By default, stepping is switched off.
+Thus, to execute the model to completion, <em>simulateStep</em> must be called repeatedly.</p>
+<p><strong>Note: it is not yet clear to the developers whether this part of the API offers any advantages
+or capabilities over and above the *simulate* function. The survival of this function
+in future versions depends on the feedback from the user community.</strong></p>
+<dl class="docutils">
+<dt>Call:</dt>
+<dd><strong>simulateStep(callback=&lt;proc&gt;,until=&lt;endtime&gt;)</strong></dd>
+<dt>Mandatory parameters:</dt>
+<dd>None</dd>
+<dt>Optional parameters:</dt>
+<dd><ul class="first last simple">
+<li><strong>until = 0</strong>: the simulation time until which the simulation is to run (positive floating point or integer number)</li>
+<li><strong>callback = lambda:None</strong>: the function to be called after every event (function reference)</li>
+</ul>
+</dd>
+<dt>Return value:</dt>
+<dd>The tuple <strong>(simulation status at exit (string),&lt;resumability flag&gt;)</strong>.
+&lt;resumability flag&gt; can have one of two string values: <strong>&#8220;resumable&#8221;</strong> if there
+are more events to be executed, and <strong>&#8220;notResumable&#8221;</strong> if all events have been exhausted
+or an error has occurred. <em>simulateStep</em> should normally only be called if
+&#8220;resumable&#8221; is returned.</dd>
+</dl>
+<p>$Revision: 297 $ $Date: 2009-03-31 02:24:46 +1300 (Tue, 31 Mar 2009) $ kgm</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/sm_SimPy_Logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Simulation with Event Stepping</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#simulationstep-overview">SimulationStep overview</a></li>
+<li><a class="reference internal" href="#the-simulationstep-api">The SimulationStep API</a><ul>
+<li><a class="reference internal" href="#structure">Structure</a></li>
+<li><a class="reference internal" href="#startstepping"><strong>startStepping</strong></a></li>
+<li><a class="reference internal" href="#stopstepping"><strong>stopStepping</strong></a></li>
+<li><a class="reference internal" href="#simulate"><strong>simulate</strong></a></li>
+<li><a class="reference internal" href="#simulatestep"><strong>simulateStep</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="SimRTManual.html"
+                        title="previous chapter">Simulation with Real Time Synchronization</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../SimPy_Libraries.html"
+                        title="next chapter">SimPy Libraries</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/Manuals/SimStepManual.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../SimPy_Libraries.html" title="SimPy Libraries"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="SimRTManual.html" title="Simulation with Real Time Synchronization"
+             >previous</a> |</li>
+        <li><a href="../index.html">SimPy v2.2 documentation</a> &raquo;</li>
+          <li><a href="../Using_SimPy.html" >Using SimPy</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2002-2011, Klaus Müller, Tony Vignaux, Ontje Lünsdorf, Stefan Scherfke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

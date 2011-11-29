@@ -1,0 +1,169 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation &mdash; SimPy v2.2 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="SimPy v2.2 documentation" href="../index.html" />
+    <link rel="up" title="Getting Started" href="../Getting_Started.html" />
+    <link rel="next" title="Contents of This SimPy Distribution" href="DISTRIBUTION_CONTENTS.html" />
+    <link rel="prev" title="Getting Started" href="../Getting_Started.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="DISTRIBUTION_CONTENTS.html" title="Contents of This SimPy Distribution"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../Getting_Started.html" title="Getting Started"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">SimPy v2.2 documentation</a> &raquo;</li>
+          <li><a href="../Getting_Started.html" accesskey="U">Getting Started</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>This file describes the installation of SimPy 2.2.</p>
+<ol class="arabic">
+<li><p class="first">Check that you have Python 2.3 or above. Python 3 is not yet supported, but
+we are working on it. If necessary, download Python from <a class="reference external" href="http://python.org">http://python.org</a>
+and install it.</p>
+</li>
+<li><p class="first">You can install SimPy easily via <a class="reference external" href="http://pypi.python.org/pypi/pip">PIP</a>
+(or <tt class="docutils literal"><span class="pre">easy_install</span></tt>):</p>
+<div class="highlight-python"><pre>$ pip install SimPy
+$ # or:
+$ easy_install SimPy</pre>
+</div>
+<p>If SimPy is already installed, use the <em>-U</em> option for pip/easy_install to
+upgrade:</p>
+<div class="highlight-python"><pre>$ pip install -U SimPy</pre>
+</div>
+<p>Remember, on Linux/MacOS/Unix you may need <em>root</em> privileges to install
+SimPy. This also applies to the installing SimPy manually as described
+below.</p>
+</li>
+<li><p class="first">To manually install a SimPy tarball, or to execute the examples, download
+and unpack the SimPy archive into a folder (using option &#8220;Use folder names&#8221;
+in WinZip, &#8220;Re-create folders&#8221; in Linux Archive Manager, or similar option
+in your unpacker). This will create a SimPy-2.2 folder with all source
+code and documentation.</p>
+<p>Open a terminal, <em>cd</em> to the SimPy folder and execute <em>setup.py</em> or
+<em>easy_install .</em> or <em>pip install .</em>:</p>
+<div class="highlight-python"><pre>$ cd where/you/put/simpy/SimPy-x.y
+$ python setup.py install
+$ # or
+$ easy_install .
+$ # or
+$ pip install .</pre>
+</div>
+<p>If you do not have permissions to perform the installation as root, you can
+install SimPy into a non-standard folder:</p>
+<div class="highlight-python"><pre>$ cd where/you/put/simpy/SimPy-x.y
+$ python setup.py install --home &lt;dir&gt;</pre>
+</div>
+</li>
+<li><p class="first">Run one or more of the programs under <em>docs/examples</em> to see
+whether Python finds the SimPy module. If you get an error message
+like <em>ImportError: No module named SimPy</em>, move the SimPy folder
+into a directory which you know to be on the Python module search
+path (like /Lib/site-packages).</p>
+</li>
+<li><p class="first">The tutorial and manuals are in the <em>docs/html</em> folder. Many users have
+commented that the Bank tutorials are valuable in getting users started on
+building their own simple models. Even a few lines of Python and SimPy can
+model significant real systems.</p>
+</li>
+</ol>
+<p>For more help, contact the <a class="reference external" href="mailto:simpy-users&#37;&#52;&#48;lists&#46;sourceforge&#46;net">SimPy-Users mailing list</a>. SimPy users are pretty helpful.</p>
+<p>Enjoy simulation programming in SimPy!</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/sm_SimPy_Logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../Getting_Started.html"
+                        title="previous chapter">Getting Started</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="DISTRIBUTION_CONTENTS.html"
+                        title="next chapter">Contents of This SimPy Distribution</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/Manuals/INSTALLATION.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="DISTRIBUTION_CONTENTS.html" title="Contents of This SimPy Distribution"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../Getting_Started.html" title="Getting Started"
+             >previous</a> |</li>
+        <li><a href="../index.html">SimPy v2.2 documentation</a> &raquo;</li>
+          <li><a href="../Getting_Started.html" >Getting Started</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2002-2011, Klaus Müller, Tony Vignaux, Ontje Lünsdorf, Stefan Scherfke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

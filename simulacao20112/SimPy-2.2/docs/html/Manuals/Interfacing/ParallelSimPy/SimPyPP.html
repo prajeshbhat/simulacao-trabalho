@@ -1,0 +1,588 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Running SimPy on Multiple Processors with Parallel Python &mdash; SimPy v2.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="SimPy v2.2 documentation" href="../../../index.html" />
+    <link rel="up" title="Interfacing to External Packages" href="../../../Interfacing.html" />
+    <link rel="next" title="Cheatsheets" href="../../../Cheatsheets.html" />
+    <link rel="prev" title="Publication-quality plot production with matplotlib" href="../ProductionQualityPlotting/SimPymatplotlib.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../Cheatsheets.html" title="Cheatsheets"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../ProductionQualityPlotting/SimPymatplotlib.html" title="Publication-quality plot production with matplotlib"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">SimPy v2.2 documentation</a> &raquo;</li>
+          <li><a href="../../../Interfacing.html" accesskey="U">Interfacing to External Packages</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="running-simpy-on-multiple-processors-with-parallel-python">
+<h1><a class="toc-backref" href="#id1">Running SimPy on Multiple Processors with <strong>Parallel Python</strong></a><a class="headerlink" href="#running-simpy-on-multiple-processors-with-parallel-python" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#running-simpy-on-multiple-processors-with-parallel-python" id="id1">Running SimPy on Multiple Processors with <strong>Parallel Python</strong></a><ul>
+<li><a class="reference internal" href="#introduction" id="id2">Introduction</a></li>
+<li><a class="reference internal" href="#examples" id="id3">Examples</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h2><a class="toc-backref" href="#id2">Introduction</a><a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>With SimPy 2.0, you can easily increase the performance of your simulation by
+using <a class="reference external" href="http://www.parallelpython.com/">Parallel Python</a> if you have a larger number of independent processors
+(multiple CPUs or cores). <em>Parallel Python</em> can distribute the execution of
+your SimPy processes to all cores of your CPU and even to other computers. You
+should read the PP documentation for further information on how this works.</p>
+<p>Please, note that <em>Parallel Python</em> is not included in the SimPy  distribution
+and needs to be <cite>downloaded &lt;http://www.parallelpython.com/&gt;</cite> and installed
+separately.</p>
+</div>
+<div class="section" id="examples">
+<h2><a class="toc-backref" href="#id3">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="example-1">
+<h3>Example #1<a class="headerlink" href="#example-1" title="Permalink to this headline">¶</a></h3>
+<p>The files <a class="reference external" href="../../../_static/PPExample.txt">PPExample.txt</a> and <a class="reference external" href="../../../_static/PPExampleProcess.txt">PPExampleProcess.txt</a> contain a small example
+with several car processes. It is important, that processes etc.are not
+defined in the file that starts the PP job server and executes the jobs,
+since <tt class="docutils literal"><span class="pre">ppserver.submit()</span></tt> only takes functions defined in the same file and
+module names to import, but no classes.</p>
+<p>PPExample.py:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Example for SimPy with Parallel Python.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">PPExampleProcess</span>
+<span class="kn">from</span> <span class="nn">SimPy.Simulation</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">pp</span>
+
+
+<span class="k">def</span> <span class="nf">runSimulation</span><span class="p">(</span><span class="n">jobNum</span><span class="p">,</span> <span class="n">numCars</span><span class="p">):</span>
+    <span class="n">sim</span> <span class="o">=</span> <span class="n">SimPy</span><span class="o">.</span><span class="n">Simulation</span><span class="o">.</span><span class="n">Simulation</span><span class="p">()</span>
+    <span class="n">cars</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numCars</span><span class="p">):</span>
+        <span class="n">car</span> <span class="o">=</span> <span class="n">PPExampleProcess</span><span class="o">.</span><span class="n">Car</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="n">jobNum</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">car</span><span class="p">,</span> <span class="n">car</span><span class="o">.</span><span class="n">run</span><span class="p">(),</span> <span class="n">at</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">cars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">car</span><span class="p">)</span>
+    <span class="n">sim</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">until</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span>
+
+
+<span class="n">server</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">Server</span><span class="p">(</span><span class="n">ppservers</span> <span class="o">=</span> <span class="p">())</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">job</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+                        <span class="n">runSimulation</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                        <span class="p">(),</span>
+                        <span class="p">(</span><span class="s">&#39;SimPy.Simulation&#39;</span><span class="p">,</span> <span class="s">&#39;PPExampleProcess&#39;</span><span class="p">))</span>
+    <span class="n">job</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>PPExampleProcess.py:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">SimPy.Simulation</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">class</span> <span class="nc">Car</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sim</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="n">Process</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sim</span> <span class="o">=</span> <span class="n">sim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="mi">10</span>
+            <span class="k">print</span> <span class="s">&#39;Car #</span><span class="si">%i</span><span class="s"> at t = </span><span class="si">%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The simulated process in this case is a simple car, that holds for ten steps
+and then prints the current simulation time. Obviously, each car process is
+independent from the other ones. Thus if we want to simulate a great number of
+cars, we can easily distribute the processes to many CPU cores and others
+computers in our network.</p>
+<p>PP pickles everything it sends to other cores/computers. Since SimPy is
+currently not pickleable, you cannot submit <tt class="docutils literal"><span class="pre">Simulation.simulate()</span></tt> to the
+PPServer. In this example <tt class="docutils literal"><span class="pre">runSimulation</span></tt> is defined and submitted to the
+server. The code within it will be executed on each core/computer. In the
+example we create four simulation jobs with two cars for each job.</p>
+<p>Run PPExample.py to execute the example.</p>
+</div>
+<div class="section" id="example-2">
+<h3>Example #2<a class="headerlink" href="#example-2" title="Permalink to this headline">¶</a></h3>
+<p>Files <a class="reference external" href="../../../_static/simulator.txt">simulator.txt</a> and <a class="reference external" href="../../../_static/processes.txt">processes.txt</a> contain an example that
+simulates refrigerators in single-thread and in parallel simulation mode.</p>
+<p>Class <tt class="docutils literal"><span class="pre">Simulator</span></tt> simulates a number of fridges and gets the resulting data.</p>
+<p>Class <tt class="docutils literal"><span class="pre">ParallelSimulator</span></tt> simulates a number of fridges and gets the resulting data.
+A number of jobs will be created that use all available
+CPU cores or even other computers.</p>
+<p>To use clustering, ParallelPython needs to be installed on all computers
+and the server demon &#8220;ppserver.py&#8221; must be started. The list of the servers&#8217;
+IP addresses must then be passed to the constructor of this class.</p>
+<p>Run <tt class="docutils literal"><span class="pre">simulator.py</span></tt> to execute this example.</p>
+<p>File simulator.py:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># coding=utf8</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The fridge simulation</span>
+
+<span class="sd">@author: Stefan Scherfke</span>
+<span class="sd">@contact: stefan.scherfke at uni-oldenburg.de</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">clock</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">SimPy.Simulation</span> <span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span> <span class="n">activate</span><span class="p">,</span> <span class="n">initialize</span><span class="p">,</span> <span class="n">simulate</span>
+<span class="kn">import</span> <span class="nn">pp</span>
+
+<span class="kn">from</span> <span class="nn">processes</span> <span class="kn">import</span> <span class="n">Fridge</span><span class="p">,</span> <span class="n">FridgeObserver</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;Simulator&#39;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Simulator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class simulates a number of fridges and gets the resulting data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numFridges</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">aggSteps</span><span class="p">,</span> <span class="n">duration</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setup the simulation with the specified number of fridges.</span>
+
+<span class="sd">        Tau specifies the simulation step for each frige. Furthermore the</span>
+<span class="sd">        observer will collect data each tau. Collected data</span>
+<span class="sd">        will be aggregated at the end of each aggSteps simulation steps.</span>
+
+<span class="sd">        @param numFridges: The number of simulated fridges</span>
+<span class="sd">        @type numFridges:  unsigned int</span>
+<span class="sd">        @param tau: simulation step size for collecting data and simulating</span>
+<span class="sd">                    the fridge</span>
+<span class="sd">        @type tau:  float</span>
+<span class="sd">        @param aggSteps: Collected data will be aggregated each aggSteps</span>
+<span class="sd">                         simulation steps. Signals interval will be</span>
+<span class="sd">                         tau * aggSteps</span>
+<span class="sd">        @type aggSteps:  unsigned int</span>
+<span class="sd">        @param duration: Duration of the simulation in hours</span>
+<span class="sd">        @type duration:  unsigned int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Initializing simulator ...&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simEnd</span> <span class="o">=</span> <span class="n">duration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">()</span>
+
+        <span class="n">fridgeProperties</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;tau&#39;</span><span class="p">:</span> <span class="n">tau</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fridges</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numFridges</span><span class="p">):</span>
+            <span class="n">fridge</span> <span class="o">=</span> <span class="n">Fridge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">,</span> <span class="o">**</span><span class="n">fridgeProperties</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fridges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fridge</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observer</span> <span class="o">=</span> <span class="n">FridgeObserver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fridges</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">aggSteps</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the system, start the simulation and return the collected</span>
+<span class="sd">        data.</span>
+
+<span class="sd">        @return: The fridgerators consumption after each aggregation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Running simulation ...&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">fridge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fridges</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">fridge</span><span class="p">,</span> <span class="n">fridge</span><span class="o">.</span><span class="n">run</span><span class="p">(),</span> <span class="n">at</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_observer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observer</span><span class="o">.</span><span class="n">run</span><span class="p">(),</span> <span class="n">at</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">until</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simEnd</span><span class="p">)</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Simulation run finished.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observer</span><span class="o">.</span><span class="n">getData</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">ParallelSimulator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class simulates a number of fridges and gets the resulting data.</span>
+<span class="sd">    Unlike simulator, a number of jobs will be created that use all availale</span>
+<span class="sd">    CPU cores or even other computers.</span>
+
+<span class="sd">    To use clustering, ParallelPython needs to be installed on all computers</span>
+<span class="sd">    and the server demon &quot;ppserver.py&quot; must be started. The list of the server&#39;s</span>
+<span class="sd">    IPs must then be passed to the constructor of this class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numFridges</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">aggSteps</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span>
+            <span class="n">jobSize</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">servers</span> <span class="o">=</span> <span class="p">()):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setup the simulation with the specified number of fridges. It will be</span>
+<span class="sd">        split up in several parallel jobs, each with the specified number of</span>
+<span class="sd">        jobs.</span>
+
+<span class="sd">        Tau specifies the simulation step for each frige. Furthermore the</span>
+<span class="sd">        observer will collect data each tau. Collected data</span>
+<span class="sd">        will be aggregated at the end of each aggSteps simulation steps.</span>
+
+<span class="sd">        @param numFridges: The number of simulated fridges</span>
+<span class="sd">        @type numFridges:  unsigned int</span>
+<span class="sd">        @param tau: simulation step size for collecting data and simulating</span>
+<span class="sd">        the fridge</span>
+<span class="sd">        @type tau:  float</span>
+<span class="sd">        @param aggSteps: Collected data will be aggregated each aggSteps</span>
+<span class="sd">        simulation steps. Signals interval will be</span>
+<span class="sd">        tau * aggSteps</span>
+<span class="sd">        @type aggSteps:  unsigned int</span>
+<span class="sd">        @param duration: Duration of the simulation</span>
+<span class="sd">        @type duration:  unsigned int</span>
+<span class="sd">        @param jobSize: The number of friges per job, defaults to 100.</span>
+<span class="sd">        @type jobSize: unsigned int</span>
+<span class="sd">        @param servers: A list of IPs from on which the simulation shall be</span>
+<span class="sd">                        executed. Defaults to &quot;()&quot; (use only SMP)</span>
+<span class="sd">        @type servers:  tuple of string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Initializing prallel simulation ...&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_jobSize</span> <span class="o">=</span> <span class="n">jobSize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_servers</span> <span class="o">=</span> <span class="n">servers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numFridges</span> <span class="o">=</span> <span class="n">numFridges</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tau</span> <span class="o">=</span> <span class="n">tau</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aggSteps</span> <span class="o">=</span> <span class="n">aggSteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simEnd</span> <span class="o">=</span> <span class="n">duration</span>
+
+    <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create some simulation jobs, run them and retrieve their results.</span>
+
+<span class="sd">        @return: The fridgerators consumption after each aggregation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Running parallel simulation ...&#39;</span><span class="p">)</span>
+        <span class="n">oldLevel</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getEffectiveLevel</span><span class="p">()</span> <span class="c"># pp changes the log level :(</span>
+        <span class="n">jobServer</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">Server</span><span class="p">(</span><span class="n">ppservers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_servers</span><span class="p">)</span>
+
+        <span class="c"># Start the jobs</span>
+        <span class="n">remainingFridges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numFridges</span>
+        <span class="n">jobs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="n">remainingFridges</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">jobs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">jobServer</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">runSimulation</span><span class="p">,</span>
+                    <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_jobSize</span><span class="p">,</span> <span class="n">remainingFridges</span><span class="p">),),</span>
+                    <span class="p">(),</span>
+                    <span class="p">(</span><span class="s">&quot;logging&quot;</span><span class="p">,</span> <span class="s">&quot;SimPy.Simulation&quot;</span><span class="p">,</span> <span class="s">&quot;processes&quot;</span><span class="p">)))</span>
+            <span class="n">remainingFridges</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobSize</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Number of jobs for simulation: </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">jobs</span><span class="p">))</span>
+
+        <span class="c"># Add each job&#39;s data</span>
+        <span class="n">pSum</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">int</span><span class="p">((</span><span class="mi">60</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aggSteps</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">simEnd</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">job</span> <span class="ow">in</span> <span class="n">jobs</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">job</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
+                <span class="n">pSum</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">pSum</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">jobs</span><span class="p">)</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">oldLevel</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Parallel simulation finished.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pSum</span>
+
+    <span class="k">def</span> <span class="nf">runSimulation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numFridges</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a job with the specified number of fridges and controllers and</span>
+<span class="sd">        one observer. Simulate this and return the results.</span>
+
+<span class="sd">        @param numFridges: The number of fridges to use for this job</span>
+<span class="sd">        @type numFridges:  unsigned int</span>
+<span class="sd">        @return: A list with the aggregated fridge consumption</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sim</span> <span class="o">=</span> <span class="n">SimPy</span><span class="o">.</span><span class="n">Simulation</span><span class="o">.</span><span class="n">Simulation</span><span class="p">()</span>
+        <span class="n">sim</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+
+        <span class="n">fridgeProperties</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;tau&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tau</span><span class="p">}</span>
+        <span class="n">fridges</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numFridges</span><span class="p">):</span>
+            <span class="n">fridge</span> <span class="o">=</span> <span class="n">processes</span><span class="o">.</span><span class="n">Fridge</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="o">**</span><span class="n">fridgeProperties</span><span class="p">)</span>
+            <span class="n">fridges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fridge</span><span class="p">)</span>
+            <span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">fridge</span><span class="p">,</span> <span class="n">fridge</span><span class="o">.</span><span class="n">run</span><span class="p">(),</span> <span class="n">at</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">observer</span> <span class="o">=</span> <span class="n">processes</span><span class="o">.</span><span class="n">FridgeObserver</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span>
+                <span class="n">fridges</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tau</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aggSteps</span><span class="p">)</span>
+        <span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">observer</span><span class="p">,</span> <span class="n">observer</span><span class="o">.</span><span class="n">run</span><span class="p">(),</span> <span class="n">at</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">sim</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">until</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simEnd</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">observer</span><span class="o">.</span><span class="n">getData</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+            <span class="n">format</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%(asctime)s</span><span class="s"> </span><span class="si">%(levelname)8s</span><span class="s">: </span><span class="si">%(name)s</span><span class="s">: </span><span class="si">%(message)s</span><span class="s">&#39;</span><span class="p">)</span>
+
+    <span class="n">numFridges</span> <span class="o">=</span> <span class="mi">5000</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="mi">60</span>
+    <span class="n">aggStep</span> <span class="o">=</span> <span class="mi">15</span>
+    <span class="n">duration</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">tau</span>
+
+    <span class="n">sim</span> <span class="o">=</span> <span class="n">Simulator</span><span class="p">(</span><span class="n">numFridges</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">aggStep</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">simulate</span><span class="p">()</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Results: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+    <span class="n">servers</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">sim</span> <span class="o">=</span> <span class="n">ParallelSimulator</span><span class="p">(</span><span class="n">numFridges</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">aggStep</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">servers</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">simulate</span><span class="p">()</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Results: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>File process.py:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># coding=utf8</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This file contains classes for simulating, controlling and observing a fridge.</span>
+
+<span class="sd">@author: Stefan Scherfke</span>
+<span class="sd">@contact: stefan.scherfke at uni-oldenburg.de</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">exp</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="kn">from</span> <span class="nn">SimPy.Simulation</span> <span class="kn">import</span> <span class="n">Process</span><span class="p">,</span> <span class="n">Simulation</span><span class="p">,</span> \
+        <span class="n">activate</span><span class="p">,</span> <span class="n">hold</span><span class="p">,</span> <span class="n">initialize</span><span class="p">,</span> <span class="n">now</span><span class="p">,</span> <span class="n">simulate</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;Processes&#39;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Fridge</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class represents a simulated fridge.</span>
+
+<span class="sd">    It&#39;s temperature T for and equidistant series of time steps is computed by</span>
+<span class="sd">    $T_{i+1} = \epsilon \cdot T_i + (1 - \epsilon) \cdot \left(T^O - \eta</span>
+<span class="sd">    \cdot \frac{q_i}{A}\right)$ with $\epsilon = e^{-\frac{\tau A}{m_c}}$.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sim</span><span class="p">,</span> <span class="n">T_O</span> <span class="o">=</span> <span class="mf">20.0</span><span class="p">,</span> <span class="n">A</span> <span class="o">=</span> <span class="mf">3.21</span><span class="p">,</span> <span class="n">m_c</span> <span class="o">=</span> <span class="mf">15.97</span><span class="p">,</span> <span class="n">tau</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="mi">60</span><span class="p">,</span>
+                  <span class="n">eta</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span> <span class="n">q_i</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">q_max</span> <span class="o">=</span> <span class="mf">70.0</span><span class="p">,</span>
+                  <span class="n">T_i</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span> <span class="n">T_range</span> <span class="o">=</span> <span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">],</span> <span class="n">noise</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Init all required variables.</span>
+
+<span class="sd">        @param sim:       The SimPy simulation this process belongs to</span>
+<span class="sd">        @type sim:        SimPy.Simulation</span>
+<span class="sd">        @param T_O:       Outside temperature</span>
+<span class="sd">        @param A:         Insulation</span>
+<span class="sd">        @param m_c:       Thermal mass/thermal storage capacity</span>
+<span class="sd">        @param tau:       Time span between t_i and t_{i+1}</span>
+<span class="sd">        @param eta:       Efficiency of the cooling device</span>
+<span class="sd">        @param q_i:       Initial/current electrical power</span>
+<span class="sd">        @param q_max:     Power required during cool-down</span>
+<span class="sd">        @param T_i:       Initial/current temperature</span>
+<span class="sd">        @param T_range:   Allowed range for T_i</span>
+<span class="sd">        @param noise:     Add noise to the fridge&#39;s parameters, if True</span>
+<span class="sd">        @type noise:      bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Process</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sim</span> <span class="o">=</span> <span class="n">sim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T_O</span> <span class="o">=</span> <span class="n">T_O</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">A</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_c</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">normalvariate</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">)</span> <span class="k">if</span> <span class="n">noise</span> <span class="k">else</span> <span class="n">m_c</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">=</span> <span class="n">tau</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="n">eta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_i</span> <span class="o">=</span> <span class="n">q_i</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_max</span> <span class="o">=</span> <span class="n">q_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T_i</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">T_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">T_range</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="n">noise</span> <span class="k">else</span> <span class="n">T_i</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T_range</span> <span class="o">=</span> <span class="n">T_range</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the fridge&#39;s temperature for the current time step.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">epsilon</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_c</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">T_i</span> <span class="o">=</span> <span class="n">epsilon</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_i</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">epsilon</span><span class="p">)</span> \
+                    <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T_O</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q_i</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_i</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">q_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_max</span>         <span class="c"># Cool down</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_i</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">q_i</span> <span class="o">=</span> <span class="mf">0.0</span>                <span class="c"># Stop cooling</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;T_i: </span><span class="si">%2.2f</span><span class="s">°C at </span><span class="si">%.2f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T_i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()))</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau</span>
+
+    <span class="k">def</span> <span class="nf">coolDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Start cooling down now!</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_max</span>
+
+
+<span class="k">class</span> <span class="nc">FridgeObserver</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This process observes the temperature and power consumption of a set of</span>
+<span class="sd">    fridges.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sim</span><span class="p">,</span> <span class="n">fridges</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">aggSteps</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Init the observer.</span>
+
+<span class="sd">        @param sim: The SimPy simulation this process belongs to</span>
+<span class="sd">        @type sim:  SimPy.Simulation</span>
+<span class="sd">        @param fridges: A list of fridges to be observed</span>
+<span class="sd">        @type fridges: tuple of Fridge</span>
+<span class="sd">        @param tau: Time interval for observations</span>
+<span class="sd">        @type tau: float</span>
+<span class="sd">        @param aggSteps: Specifies after how many timesteps tau the collected</span>
+<span class="sd">                         data is aggregated and stored.</span>
+<span class="sd">        @type aggSteps: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Process</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sim</span> <span class="o">=</span> <span class="n">sim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fridges</span> <span class="o">=</span> <span class="n">fridges</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tau</span> <span class="o">=</span> <span class="n">tau</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aggSteps</span> <span class="o">=</span> <span class="n">aggSteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Start observation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">aggSteps</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">consumption</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">lastProgUpdate</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">prog</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">_endtime</span>
+            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">prog</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">lastProgUpdate</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Progress: </span><span class="si">%d%%</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">prog</span><span class="p">)</span>
+                <span class="n">lastProgUpdate</span> <span class="o">=</span> <span class="n">prog</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">aggSteps</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aggSteps</span><span class="p">):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Aggregating at </span><span class="si">%.2f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">consumption</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">_aggSteps</span><span class="p">)</span>
+                <span class="n">consumption</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">aggSteps</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="k">for</span> <span class="n">fridge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fridges</span><span class="p">:</span>
+                <span class="n">consumption</span> <span class="o">+=</span> <span class="n">fridge</span><span class="o">.</span><span class="n">q_i</span>
+            <span class="n">aggSteps</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tau</span>
+
+    <span class="k">def</span> <span class="nf">getData</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the collected data</span>
+
+<span class="sd">        @return: a list with the collected data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+            <span class="n">format</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%(levelname)-8s</span><span class="s"> </span><span class="si">%(asctime)s</span><span class="s"> </span><span class="si">%(name)s</span><span class="s">: </span><span class="si">%(message)s</span><span class="s">&#39;</span><span class="p">)</span>
+
+    <span class="n">tau</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="mi">60</span> <span class="c"># Step size 1min</span>
+    <span class="n">aggSteps</span> <span class="o">=</span> <span class="mi">15</span> <span class="c"># Aggregate consumption in 15min blocks</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;tau&#39;</span><span class="p">:</span> <span class="n">tau</span><span class="p">}</span>
+
+    <span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">()</span>
+
+    <span class="n">fridge</span> <span class="o">=</span> <span class="n">Fridge</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">observer</span> <span class="o">=</span> <span class="n">FridgeObserver</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="p">[</span><span class="n">fridge</span><span class="p">],</span> <span class="n">tau</span><span class="p">,</span> <span class="n">aggSteps</span><span class="p">)</span>
+
+    <span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">fridge</span><span class="p">,</span> <span class="n">fridge</span><span class="o">.</span><span class="n">run</span><span class="p">(),</span> <span class="n">at</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">observer</span><span class="p">,</span> <span class="n">observer</span><span class="o">.</span><span class="n">run</span><span class="p">(),</span> <span class="n">at</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">sim</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">until</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">tau</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">observer</span><span class="o">.</span><span class="n">getData</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/sm_SimPy_Logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Running SimPy on Multiple Processors with <strong>Parallel Python</strong></a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#example-1">Example #1</a></li>
+<li><a class="reference internal" href="#example-2">Example #2</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../ProductionQualityPlotting/SimPymatplotlib.html"
+                        title="previous chapter">Publication-quality plot production with <strong>matplotlib</strong></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../../../Cheatsheets.html"
+                        title="next chapter">Cheatsheets</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/Manuals/Interfacing/ParallelSimPy/SimPyPP.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../Cheatsheets.html" title="Cheatsheets"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../ProductionQualityPlotting/SimPymatplotlib.html" title="Publication-quality plot production with matplotlib"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">SimPy v2.2 documentation</a> &raquo;</li>
+          <li><a href="../../../Interfacing.html" >Interfacing to External Packages</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2002-2011, Klaus Müller, Tony Vignaux, Ontje Lünsdorf, Stefan Scherfke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1856 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The Bank Tutorial (Advanced OO API) Part 2: More examples of SimPy Simulation &mdash; SimPy v2.2 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="SimPy v2.2 documentation" href="../index.html" />
+    <link rel="up" title="SimPy Tutorials" href="../SimPy_Tutorials.html" />
+    <link rel="next" title="SimPy Course on the Web" href="../OnLineSimPyCourse.html" />
+    <link rel="prev" title="The Bank (Object Oriented version)" href="TheBankOO.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../OnLineSimPyCourse.html" title="SimPy Course on the Web"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="TheBankOO.html" title="The Bank (Object Oriented version)"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">SimPy v2.2 documentation</a> &raquo;</li>
+          <li><a href="../SimPy_Tutorials.html" accesskey="U">SimPy Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-bank-tutorial-advanced-oo-api-part-2-more-examples-of-simpy-simulation">
+<h1>The Bank Tutorial (Advanced OO API) Part 2: More  examples of SimPy Simulation<a class="headerlink" href="#the-bank-tutorial-advanced-oo-api-part-2-more-examples-of-simpy-simulation" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Authors:</th><td class="field-body">G A Vignaux, K G Muller</td>
+</tr>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">2010 April</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="advanced-oo-api-bank-tutorial-version">
+<h2>Advanced OO API Bank Tutorial version<a class="headerlink" href="#advanced-oo-api-bank-tutorial-version" title="Permalink to this headline">¶</a></h2>
+<p>This manual is a rework of the <em>Bank Tutorial Part 2</em>.
+Its goal is to show how the simple tutorial models can
+be written in the advanced OO API.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">To contrast the advanced OO API with the traditional
+SimPy API, the reader should read both &#8220;Bank Tutorial Part 2&#8221;
+documents side by side.</p>
+</div>
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The first Bank tutorial, The Bank, developed and explained a
+series of simulation models of a simple bank using <a class="reference external" href="http://simpy.sourceforge.net/">SimPy</a>. In various
+models, customers arrived randomly, queued up to be served at one or
+several counters, modelled using the Resource class, and, in one case,
+could choose the shortest among several queues. It demonstrated the
+use of the Monitor class to record delays and showed how a <tt class="docutils literal"><span class="pre">model()</span></tt>
+mainline for the simulation was convenient to execute replications of
+simulation runs.</p>
+<p>In this extension to The Bank, I provide more examples of SimPy
+facilities for which there was no room and for some that were
+developed since it was written. These facilities are generally more
+complicated than those introduced before. They include queueing with priority,
+possibly with preemption, reneging, plotting, interrupting, waiting
+until a condition occurs (<tt class="docutils literal"><span class="pre">waituntil</span></tt>) and waiting for events to
+occur.</p>
+<p>Starting with SimPy 2.0 an object-oriented programmer&#8217;s interface was
+added to the package and it is this version that is described here.
+It is quite compatible with the procedural approach. The object-oriented
+interface, however, can support the process of developing and extending a
+simulation model better than the procedural approach.</p>
+<p>The programs are available without line numbers and ready to go, in
+directory <tt class="docutils literal"><span class="pre">bankprograms</span></tt>. Some have trace statements for
+demonstration purposes, others produce graphical output to the
+screen. Let me encourage you to run them and modify them for yourself.</p>
+<p>SimPy itself can be obtained from: <a class="reference external" href="http://simpy.sourceforge.net/">http://simpy.sourceforge.net/</a>.  It
+is compatible with Python version 2.3 onwards.  The examples in this
+documentation run with SimPy version 1.5 and later.</p>
+<p>This tutorial should be read with the SimPy Manual and CheatsheetOO at
+your side for reference.</p>
+</div>
+<div class="section" id="priority-customers">
+<h2>Priority Customers<a class="headerlink" href="#priority-customers" title="Permalink to this headline">¶</a></h2>
+<p>In many situations there is a system of priority service. Those
+customers with high priority are served first, those with low priority
+must wait. In some cases, preemptive priority will even allow a
+high-priority customer to interrupt the service of one with a lower
+priority.</p>
+<p>SimPy implements priority requests with an extra numerical priority
+argument in the <tt class="docutils literal"><span class="pre">yield</span> <span class="pre">request</span></tt> command, higher values meaning
+higher priority. For this to operate, the requested Resource must have
+been defined with <tt class="docutils literal"><span class="pre">qType=PriorityQ</span></tt>. This require importing the <tt class="docutils literal"><span class="pre">PriorityQ</span></tt>
+class from <tt class="docutils literal"><span class="pre">SimPy.Simulation</span></tt>.</p>
+<div class="section" id="priority-customers-without-preemption">
+<h3>Priority Customers without preemption<a class="headerlink" href="#priority-customers-without-preemption" title="Permalink to this headline">¶</a></h3>
+<p id="index-0">In the first example, we modify the program with random arrivals, one
+counter, and a fixed service time (like <tt class="docutils literal"><span class="pre">bank07.py</span></tt> in The Bank
+tutorial) to process a high priority customer. Warning: the <tt class="docutils literal"><span class="pre">seedVal</span></tt>
+value has been changed to <tt class="docutils literal"><span class="pre">98989</span></tt> to make the story more exciting.</p>
+<p>The modifications are to the definition of the <tt class="docutils literal"><span class="pre">counter</span></tt> where we
+change the <tt class="docutils literal"><span class="pre">qType</span></tt> and to the <tt class="docutils literal"><span class="pre">yield</span> <span class="pre">request</span></tt> command in the
+<tt class="docutils literal"><span class="pre">visit</span></tt> PEM of the customer. We also need to provide each customer
+with a priority. Since the default is <tt class="docutils literal"><span class="pre">priority=0</span></tt> this is easy for
+most of them.</p>
+<p>To observe the priority in action, while all other customers have the
+default priority of 0, in lines 43 to 44 we create and
+activate one special customer, <tt class="docutils literal"><span class="pre">Guido</span></tt>, with priority 100 who
+arrives at time <tt class="docutils literal"><span class="pre">23.0</span></tt> (line 44). This is to ensure that he arrives
+after <tt class="docutils literal"><span class="pre">Customer03</span></tt>.</p>
+<p>The <tt class="docutils literal"><span class="pre">visit</span></tt> customer method has a new parameter, <tt class="docutils literal"><span class="pre">P=0</span></tt> (line
+20) which allows us to set the customer priority.</p>
+<p>In lines 39 to 40 the <tt class="docutils literal"><span class="pre">BankModel</span></tt> &#8216;s resource attribute <tt class="docutils literal"><span class="pre">k</span></tt>
+named <tt class="docutils literal"><span class="pre">Counter</span></tt> is defined with <tt class="docutils literal"><span class="pre">qType=PriorityQ</span></tt> so
+that we can request it with priority (line 25) using the
+statement <tt class="docutils literal"><span class="pre">yield</span> <span class="pre">request,self,self.sim.k,P</span></tt></p>
+<p>In line 23 we print out the number of customers waiting when each
+customer arrives.</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot; bank20_OO: One counter with a priority customer &quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">SimPy.Simulation</span> <span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span><span class="n">Process</span><span class="p">,</span><span class="n">Resource</span><span class="p">,</span><span class="n">PriorityQ</span><span class="p">,</span><span class="n">hold</span><span class="p">,</span><span class="n">request</span><span class="p">,</span><span class="n">release</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">expovariate</span><span class="p">,</span> <span class="n">seed</span>
+
+<span class="c">## Model components ------------------------</span>
+
+<span class="k">class</span> <span class="nc">Source</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Source generates customers randomly &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">,</span><span class="n">interval</span><span class="p">):</span>       
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number</span><span class="p">):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">Customer</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Customer</span><span class="si">%02d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,),</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">timeInBank</span><span class="o">=</span><span class="mf">12.0</span><span class="p">,</span><span class="n">P</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>           
+            <span class="n">t</span> <span class="o">=</span> <span class="n">expovariate</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">interval</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">t</span>
+
+<span class="k">class</span> <span class="nc">Customer</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Customer arrives, is served and  leaves &quot;&quot;&quot;</span>
+        
+    <span class="k">def</span> <span class="nf">visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">timeInBank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">P</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>              
+        <span class="n">arrive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>       <span class="c"># arrival time                 </span>
+        <span class="n">Nwaiting</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">k</span><span class="o">.</span><span class="n">waitQ</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.3f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Queue is </span><span class="si">%d</span><span class="s"> on arrival&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">Nwaiting</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">request</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">k</span><span class="p">,</span><span class="n">P</span>                            
+        <span class="n">wait</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">-</span><span class="n">arrive</span>  <span class="c"># waiting time                 </span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.3f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Waited </span><span class="si">%6.3f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">wait</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">timeInBank</span>
+        <span class="k">yield</span> <span class="n">release</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">k</span>                              
+
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.3f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Completed&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+
+<span class="c">## Model ------------------------------</span>
+<span class="k">class</span> <span class="nc">BankModel</span><span class="p">(</span><span class="n">Simulation</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">aseed</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="n">seed</span><span class="p">(</span><span class="n">aseed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Counter&quot;</span><span class="p">,</span><span class="n">unitName</span><span class="o">=</span><span class="s">&quot;Karen&quot;</span><span class="p">,</span>               
+             <span class="n">qType</span><span class="o">=</span><span class="n">PriorityQ</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>    
+        <span class="n">s</span> <span class="o">=</span> <span class="n">Source</span><span class="p">(</span><span class="s">&#39;Source&#39;</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="n">s</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mf">10.0</span><span class="p">),</span><span class="n">at</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>                   
+        <span class="n">guido</span> <span class="o">=</span> <span class="n">Customer</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Guido     &quot;</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>                         
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">guido</span><span class="p">,</span><span class="n">guido</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">timeInBank</span><span class="o">=</span><span class="mf">12.0</span><span class="p">,</span><span class="n">P</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span><span class="n">at</span><span class="o">=</span><span class="mf">23.0</span><span class="p">)</span>                  
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">until</span><span class="o">=</span><span class="n">maxTime</span><span class="p">)</span>
+
+<span class="c">## Experiment data -------------------------</span>
+
+<span class="n">maxTime</span> <span class="o">=</span> <span class="mf">400.0</span>  <span class="c"># minutes </span>
+<span class="n">seedVal</span> <span class="o">=</span> <span class="mi">98989</span>
+                           
+<span class="c">## Experiment ---------------------------</span>
+
+<span class="n">BankModel</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">aseed</span><span class="o">=</span><span class="n">seedVal</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<p>The resulting output is as follows. The number of customers in the
+queue just as each arrives is displayed in the trace. That count does
+not include any customer in service.</p>
+<div class="highlight-python"><pre>   0.000 Customer00: Queue is 0 on arrival
+   0.000 Customer00: Waited  0.000
+   2.166 Customer01: Queue is 0 on arrival
+   5.121 Customer02: Queue is 1 on arrival
+  12.000 Customer00: Completed
+  12.000 Customer01: Waited  9.834
+  13.347 Customer03: Queue is 1 on arrival
+  23.000 Guido     : Queue is 2 on arrival
+  24.000 Customer01: Completed
+  24.000 Guido     : Waited  1.000
+  36.000 Guido     : Completed
+  36.000 Customer02: Waited 30.879
+  38.156 Customer04: Queue is 1 on arrival
+  48.000 Customer02: Completed
+  48.000 Customer03: Waited 34.653
+  60.000 Customer03: Completed
+  60.000 Customer04: Waited 21.844
+  72.000 Customer04: Completed
+</pre>
+</div>
+<p id="index-1">Reading carefully one can see that when <tt class="docutils literal"><span class="pre">Guido</span></tt> arrives
+<tt class="docutils literal"><span class="pre">Customer00</span></tt> has been served and left at <tt class="docutils literal"><span class="pre">12.000</span></tt>), <tt class="docutils literal"><span class="pre">Customer01</span></tt>
+is in service and two (customers 02 and 03) are queueing. <tt class="docutils literal"><span class="pre">Guido</span></tt>
+has priority over those waiting and is served before them at
+<tt class="docutils literal"><span class="pre">24.000</span></tt>. When <tt class="docutils literal"><span class="pre">Guido</span></tt> leaves at <tt class="docutils literal"><span class="pre">36.000</span></tt>, <tt class="docutils literal"><span class="pre">Customer02</span></tt> starts
+service.</p>
+</div>
+<div class="section" id="priority-customers-with-preemption">
+<h3>Priority Customers with preemption<a class="headerlink" href="#priority-customers-with-preemption" title="Permalink to this headline">¶</a></h3>
+<p id="index-2">Now we allow <tt class="docutils literal"><span class="pre">Guido</span></tt> to have preemptive priority. He will displace
+any customer in service when he arrives. That customer will resume
+when <tt class="docutils literal"><span class="pre">Guido</span></tt> finishes (unless higher priority customers
+intervene). It requires only a change to one line of the program,
+adding the argument, <tt class="docutils literal"><span class="pre">preemptable=True</span></tt> to the <tt class="docutils literal"><span class="pre">Resource</span></tt>
+statement in line 40.</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot; bank23_OO: One counter with a priority customer with preemption &quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">SimPy.Simulation</span> <span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span><span class="n">Process</span><span class="p">,</span><span class="n">Resource</span><span class="p">,</span><span class="n">PriorityQ</span><span class="p">,</span><span class="n">hold</span><span class="p">,</span><span class="n">request</span><span class="p">,</span><span class="n">release</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">expovariate</span><span class="p">,</span> <span class="n">seed</span>
+
+<span class="c">## Model components ------------------------</span>
+
+<span class="k">class</span> <span class="nc">Source</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Source generates customers randomly &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">,</span><span class="n">interval</span><span class="p">):</span>       
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number</span><span class="p">):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">Customer</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Customer</span><span class="si">%02d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,),</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">timeInBank</span><span class="o">=</span><span class="mf">12.0</span><span class="p">,</span><span class="n">P</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>             
+            <span class="n">t</span> <span class="o">=</span> <span class="n">expovariate</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">interval</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">t</span>
+
+<span class="k">class</span> <span class="nc">Customer</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Customer arrives, is served and  leaves &quot;&quot;&quot;</span>
+        
+    <span class="k">def</span> <span class="nf">visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">timeInBank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">P</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>                
+        <span class="n">arrive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>       <span class="c"># arrival time                   </span>
+        <span class="n">Nwaiting</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">k</span><span class="o">.</span><span class="n">waitQ</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.3f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Queue is </span><span class="si">%d</span><span class="s"> on arrival&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">Nwaiting</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">request</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">k</span><span class="p">,</span><span class="n">P</span>                              
+        <span class="n">wait</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">-</span><span class="n">arrive</span>  <span class="c"># waiting time                   </span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.3f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Waited </span><span class="si">%6.3f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">wait</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">timeInBank</span>
+        <span class="k">yield</span> <span class="n">release</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">k</span>                                
+
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.3f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Completed&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+
+<span class="c">## Model -----------------------------------</span>
+<span class="k">class</span> <span class="nc">BankModel</span><span class="p">(</span><span class="n">Simulation</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">aseed</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="n">seed</span><span class="p">(</span><span class="n">aseed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Counter&quot;</span><span class="p">,</span><span class="n">unitName</span><span class="o">=</span><span class="s">&quot;Karen&quot;</span><span class="p">,</span>                 
+                          <span class="n">qType</span><span class="o">=</span><span class="n">PriorityQ</span><span class="p">,</span> <span class="n">preemptable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>  
+        <span class="n">s</span> <span class="o">=</span> <span class="n">Source</span><span class="p">(</span><span class="s">&#39;Source&#39;</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="n">s</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mf">10.0</span><span class="p">),</span><span class="n">at</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>                     
+        <span class="n">guido</span> <span class="o">=</span> <span class="n">Customer</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Guido     &quot;</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>                           
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">guido</span><span class="p">,</span><span class="n">guido</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">timeInBank</span><span class="o">=</span><span class="mf">12.0</span><span class="p">,</span><span class="n">P</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span><span class="n">at</span><span class="o">=</span><span class="mf">23.0</span><span class="p">)</span>                    
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">until</span><span class="o">=</span><span class="n">maxTime</span><span class="p">)</span>
+        
+<span class="c">## Experiment data -------------------------</span>
+
+<span class="n">maxTime</span> <span class="o">=</span> <span class="mf">400.0</span>  <span class="c"># minutes                                </span>
+<span class="n">seedVal</span> <span class="o">=</span> <span class="mi">98989</span>
+
+<span class="c">## Experiment -------- ---------------------</span>
+
+<span class="n">BankModel</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">aseed</span><span class="o">=</span><span class="n">seedVal</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<p>Though <tt class="docutils literal"><span class="pre">Guido</span></tt> arrives at the same time, <tt class="docutils literal"><span class="pre">23.000</span></tt>, he no longer
+has to wait and immediately goes into service, displacing the
+incumbent, <tt class="docutils literal"><span class="pre">Customer01</span></tt>. That customer had already completed
+<tt class="docutils literal"><span class="pre">23.000-12.000</span> <span class="pre">=</span> <span class="pre">11.000</span></tt> minutes of his service. When <tt class="docutils literal"><span class="pre">Guido</span></tt>
+finishes at <tt class="docutils literal"><span class="pre">35.000</span></tt>, <tt class="docutils literal"><span class="pre">Customer01</span></tt> resumes service and takes
+<tt class="docutils literal"><span class="pre">36.000-35.000</span> <span class="pre">=</span> <span class="pre">1.000</span></tt> minutes to finish. His total service time
+is the  same as before (<tt class="docutils literal"><span class="pre">12.000</span></tt> minutes).</p>
+<div class="highlight-python"><pre>   0.000 Customer00: Queue is 0 on arrival
+   0.000 Customer00: Waited  0.000
+   2.166 Customer01: Queue is 0 on arrival
+   5.121 Customer02: Queue is 1 on arrival
+  12.000 Customer00: Completed
+  12.000 Customer01: Waited  9.834
+  13.347 Customer03: Queue is 1 on arrival
+  23.000 Guido     : Queue is 2 on arrival
+  23.000 Guido     : Waited  0.000
+  35.000 Guido     : Completed
+  36.000 Customer01: Completed
+  36.000 Customer02: Waited 30.879
+  38.156 Customer04: Queue is 1 on arrival
+  48.000 Customer02: Completed
+  48.000 Customer03: Waited 34.653
+  60.000 Customer03: Completed
+  60.000 Customer04: Waited 21.844
+  72.000 Customer04: Completed
+</pre>
+</div>
+</div>
+</div>
+<div class="section" id="balking-and-reneging-customers">
+<h2>Balking and Reneging Customers<a class="headerlink" href="#balking-and-reneging-customers" title="Permalink to this headline">¶</a></h2>
+<p id="index-3">Balking occurs when a customer refuses to join a queue if it is too
+long. Reneging (or, better, abandonment) occurs if an impatient
+customer gives up while still waiting and before being served.</p>
+<div class="section" id="balking-customers">
+<h3>Balking Customers<a class="headerlink" href="#balking-customers" title="Permalink to this headline">¶</a></h3>
+<p id="index-4">Another term for a system with balking customers is one where &#8220;blocked
+customers&#8221; are &#8220;cleared&#8221;, termed by engineers a BCC system. This is
+very convenient analytically in queueing theory and formulae developed
+using this assumption are used extensively for planning communication
+systems. The easiest case is when no queueing is allowed.</p>
+<p>As an example let us investigate a BCC system with a single server but
+the waiting space is limited. We will estimate the rate of balking
+when the maximum number in the queue is set to 1. On arrival into the
+system the customer must first check to see if there is room. We will
+need the number of customers in the system or waiting. We could keep a
+count, incrementing when a customer joins the queue or, since we have
+a Resource, use the length of the Resource&#8217;s <tt class="docutils literal"><span class="pre">waitQ</span></tt>. Choosing the
+latter we test (on line 23). If there is not enough room, we
+balk, incrementing a class variable <tt class="docutils literal"><span class="pre">Customer.numBalking</span></tt> at line
+32 to get the total number balking during the run.</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot; bank24_OO. BCC system with several counters &quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">SimPy.Simulation</span> <span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span><span class="n">Process</span><span class="p">,</span><span class="n">Resource</span><span class="p">,</span><span class="n">hold</span><span class="p">,</span><span class="n">request</span><span class="p">,</span><span class="n">release</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">expovariate</span><span class="p">,</span> <span class="n">seed</span>
+
+<span class="c">## Model components ------------------------           </span>
+
+<span class="k">class</span> <span class="nc">Source</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Source generates customers randomly &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">,</span><span class="n">meanTBA</span><span class="p">):</span>          
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number</span><span class="p">):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">Customer</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Customer</span><span class="si">%02d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,),</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c</span><span class="o">.</span><span class="n">visit</span><span class="p">())</span>              
+            <span class="n">t</span> <span class="o">=</span> <span class="n">expovariate</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">meanTBA</span><span class="p">)</span>                 
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">t</span>
+
+<span class="k">class</span> <span class="nc">Customer</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Customer arrives, is served and leaves &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">visit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>                                   
+        <span class="n">arrive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Here I am &quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">k</span><span class="o">.</span><span class="n">waitQ</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">maxInQueue</span><span class="p">:</span>     <span class="c"># the test     </span>
+            <span class="k">yield</span> <span class="n">request</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">k</span>                         
+            <span class="n">wait</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">-</span><span class="n">arrive</span>
+            <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Wait </span><span class="si">%6.3f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">wait</span><span class="p">)</span>
+            <span class="n">tib</span> <span class="o">=</span> <span class="n">expovariate</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">timeInBank</span><span class="p">)</span>            
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">tib</span>                          
+            <span class="k">yield</span> <span class="n">release</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">k</span>
+            <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Finished  &quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Customer</span><span class="o">.</span><span class="n">numBalking</span> <span class="o">+=</span> <span class="mi">1</span>                      
+            <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: BALKING   &quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> 
+                                    
+
+<span class="c">## Model</span>
+<span class="k">class</span> <span class="nc">BankModel</span><span class="p">(</span><span class="n">Simulation</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">aseed</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="n">seed</span><span class="p">(</span><span class="n">aseed</span><span class="p">)</span>
+        <span class="n">Customer</span><span class="o">.</span><span class="n">numBalking</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span><span class="n">capacity</span><span class="o">=</span><span class="n">numServers</span><span class="p">,</span>
+             <span class="n">name</span><span class="o">=</span><span class="s">&quot;Counter&quot;</span><span class="p">,</span><span class="n">unitName</span><span class="o">=</span><span class="s">&quot;Clerk&quot;</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span> 
+        <span class="n">s</span> <span class="o">=</span> <span class="n">Source</span><span class="p">(</span><span class="s">&#39;Source&#39;</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="n">maxNumber</span><span class="p">,</span><span class="n">meanTBA</span><span class="o">=</span><span class="n">ARRint</span><span class="p">),</span><span class="n">at</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>             
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">until</span><span class="o">=</span><span class="n">maxTime</span><span class="p">)</span>
+
+<span class="c">## Experiment data -------------------------------       </span>
+
+<span class="n">timeInBank</span> <span class="o">=</span> <span class="mf">12.0</span> <span class="c"># mean, minutes                        </span>
+<span class="n">ARRint</span> <span class="o">=</span> <span class="mf">10.0</span>     <span class="c"># mean interarrival time, minutes</span>
+<span class="n">numServers</span> <span class="o">=</span> <span class="mi">1</span>    <span class="c"># servers</span>
+<span class="n">maxInSystem</span> <span class="o">=</span> <span class="mi">2</span>   <span class="c"># customers</span>
+<span class="n">maxInQueue</span> <span class="o">=</span> <span class="n">maxInSystem</span> <span class="o">-</span> <span class="n">numServers</span>                    
+
+<span class="n">maxNumber</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">maxTime</span> <span class="o">=</span> <span class="mf">4000.0</span> <span class="c"># minutes                                      </span>
+<span class="n">theseed</span> <span class="o">=</span> <span class="mi">12345</span>      
+        
+<span class="c">## Experiment --------------------------------------</span>
+
+<span class="n">modl</span><span class="o">=</span><span class="n">BankModel</span><span class="p">()</span>
+<span class="n">modl</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">aseed</span><span class="o">=</span><span class="n">theseed</span><span class="p">)</span>
+<span class="c">## Results -----------------------------------------</span>
+
+<span class="n">nb</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">Customer</span><span class="o">.</span><span class="n">numBalking</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;balking rate is </span><span class="si">%8.4f</span><span class="s"> per minute&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">nb</span><span class="o">/</span><span class="n">modl</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
+</pre></div>
+</td></tr></table></div>
+<p>The resulting output for a run of this program showing balking
+occurring is given below:</p>
+<div class="highlight-python"><pre>  0.0000 Customer00: Here I am 
+  0.0000 Customer00: Wait  0.000
+  8.7558 Customer01: Here I am 
+ 10.6770 Customer02: Here I am 
+ 10.6770 Customer02: BALKING   
+ 22.7622 Customer03: Here I am 
+ 22.7622 Customer03: BALKING   
+ 32.7477 Customer04: Here I am 
+ 32.7477 Customer04: BALKING   
+ 49.1642 Customer05: Here I am 
+ 49.1642 Customer05: BALKING   
+ 54.8556 Customer06: Here I am 
+ 54.8556 Customer06: BALKING   
+ 55.0607 Customer00: Finished  
+ 55.0607 Customer01: Wait 46.305
+ 73.0765 Customer07: Here I am 
+ 80.0846 Customer01: Finished  
+ 80.0846 Customer07: Wait  7.008
+ 86.9980 Customer07: Finished  
+balking rate is   0.0575 per minute
+</pre>
+</div>
+<p>When <tt class="docutils literal"><span class="pre">Customer02</span></tt> arrives, numbers 00 is already in service and 01
+is waiting. There is no room so 02 balks. By the vagaries of
+exponential random numbers, 00 takes a very long time to serve (55.0607
+minutes) so the first one to find room is number 07 at 73.0765.</p>
+</div>
+<div class="section" id="reneging-or-abandoning-customers">
+<h3>Reneging (or abandoning) Customers<a class="headerlink" href="#reneging-or-abandoning-customers" title="Permalink to this headline">¶</a></h3>
+<p>Often in practice an impatient customer will leave the queue before
+being served. SimPy can model this <em>reneging</em> behaviour using a
+<em>compound yield statement</em>. In such a statement there are two
+yield clauses. An example is:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">yield</span> <span class="p">(</span><span class="n">request</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">counter</span><span class="p">),(</span><span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">maxWaitTime</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The first tuple of this statement is the usual <tt class="docutils literal"><span class="pre">yield</span> <span class="pre">request</span></tt>,
+asking for a unit of <tt class="docutils literal"><span class="pre">counter</span></tt> Resource. The process will either get
+the unit immediately or be queued by the Resource. The second tuple is
+a reneging clause which has the same syntax as a <tt class="docutils literal"><span class="pre">yield</span> <span class="pre">hold</span></tt>. The
+requesting process will renege if the wait exceeds <tt class="docutils literal"><span class="pre">maxWaitTime</span></tt>.</p>
+<p>There is a complication, though. The requesting PEM must discover what
+actually happened. Did the process get the resource or did it
+renege? This involves a <em>mandatory</em> test of <tt class="docutils literal"><span class="pre">self.acquired(</span></tt><em>resource</em><tt class="docutils literal"><span class="pre">)</span></tt>. In our example, this test is in line 26.</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot; bank21_OO: One counter with impatient customers &quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">SimPy.Simulation</span> <span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span><span class="n">Process</span><span class="p">,</span><span class="n">Resource</span><span class="p">,</span><span class="n">hold</span><span class="p">,</span><span class="n">request</span><span class="p">,</span><span class="n">release</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">expovariate</span><span class="p">,</span> <span class="n">seed</span>
+
+<span class="c">## Model components ------------------------</span>
+
+<span class="k">class</span> <span class="nc">Source</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Source generates customers randomly &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">,</span><span class="n">interval</span><span class="p">):</span>       
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number</span><span class="p">):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">Customer</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Customer</span><span class="si">%02d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,),</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">timeInBank</span><span class="o">=</span><span class="mf">15.0</span><span class="p">))</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">expovariate</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">interval</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">t</span>
+
+<span class="k">class</span> <span class="nc">Customer</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Customer arrives, is served and  leaves &quot;&quot;&quot;</span>
+        
+    <span class="k">def</span> <span class="nf">visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">timeInBank</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>       
+        <span class="n">arrive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>       <span class="c"># arrival time                     </span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.3f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Here I am     &quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="p">(</span><span class="n">request</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">counter</span><span class="p">),(</span><span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">maxWaitTime</span><span class="p">)</span>    
+        <span class="n">wait</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">-</span><span class="n">arrive</span>  <span class="c"># waiting time                     </span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquired</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">counter</span><span class="p">):</span>                              
+            <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.3f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Waited </span><span class="si">%6.3f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">wait</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">timeInBank</span>
+            <span class="k">yield</span> <span class="n">release</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">counter</span>                          
+            <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.3f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Completed&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.3f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Waited </span><span class="si">%6.3f</span><span class="s">. I am off&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">wait</span><span class="p">)</span>
+
+<span class="c">## Model  ----------------------------------</span>
+<span class="k">class</span> <span class="nc">BankModel</span><span class="p">(</span><span class="n">Simulation</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">aseed</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="n">seed</span><span class="p">(</span><span class="n">aseed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Karen&quot;</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>                            
+        <span class="n">source</span> <span class="o">=</span> <span class="n">Source</span><span class="p">(</span><span class="s">&#39;Source&#39;</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">source</span><span class="p">,</span>
+             <span class="n">source</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mf">10.0</span><span class="p">),</span><span class="n">at</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>   
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">until</span><span class="o">=</span><span class="n">maxTime</span><span class="p">)</span>                                     
+
+<span class="c">## Experiment data -------------------------</span>
+
+<span class="n">maxTime</span> <span class="o">=</span> <span class="mf">400.0</span>  <span class="c"># minutes                                 </span>
+<span class="n">maxWaitTime</span> <span class="o">=</span> <span class="mf">12.0</span> <span class="c"># minutes. maximum time to wait  </span>
+<span class="n">seedVal</span> <span class="o">=</span> <span class="mi">98989</span>
+
+<span class="c">## Experiment  ----------------------------------</span>
+
+<span class="n">BankModel</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">aseed</span><span class="o">=</span><span class="n">seedVal</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<div class="highlight-python"><pre>   0.000 Customer00: Here I am     
+   0.000 Customer00: Waited  0.000
+   2.166 Customer01: Here I am     
+   5.121 Customer02: Here I am     
+  13.347 Customer03: Here I am     
+  14.166 Customer01: Waited 12.000. I am off
+  15.000 Customer00: Completed
+  15.000 Customer02: Waited  9.879
+  25.347 Customer03: Waited 12.000. I am off
+  30.000 Customer02: Completed
+  38.156 Customer04: Here I am     
+  38.156 Customer04: Waited  0.000
+  53.156 Customer04: Completed
+</pre>
+</div>
+<p><tt class="docutils literal"><span class="pre">Customer01</span></tt> arrives after 00 but has only 12 minutes
+patience. After that time in the queue (at time 14.166) he abandons
+the queue to leave 02 to take his place. 03 also abandons. 04 finds an
+empty system and takes the server without having to wait.</p>
+</div>
+</div>
+<div class="section" id="processes">
+<h2>Processes<a class="headerlink" href="#processes" title="Permalink to this headline">¶</a></h2>
+<p>In some simulations it is valuable for one SimPy Process to interrupt
+another. This can only be done when the <em>victim</em> is &#8220;active&#8221;; that is
+when it has an event scheduled for it. It must be executing a <tt class="docutils literal"><span class="pre">yield</span>
+<span class="pre">hold</span></tt> statement.</p>
+<p>A process waiting for a resource (after a <tt class="docutils literal"><span class="pre">yield</span> <span class="pre">request</span></tt>
+statement) is passive and cannot be interrupted by another. Instead
+the <tt class="docutils literal"><span class="pre">yield</span> <span class="pre">waituntil</span></tt> and <tt class="docutils literal"><span class="pre">yield</span> <span class="pre">waitevent</span></tt> facilities have been
+introduced to allow processes to wait for conditions set by other
+processes.</p>
+<div class="section" id="interrupting-a-process">
+<h3>Interrupting a Process.<a class="headerlink" href="#interrupting-a-process" title="Permalink to this headline">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">Klaus</span></tt> goes into the bank to talk to the manager. For clarity we
+ignore the counters and other customers. During his conversation his
+cellphone rings. When he finishes the call he continues the
+conversation.</p>
+<p>In this example, <tt class="docutils literal"><span class="pre">call</span></tt> is an object of the <tt class="docutils literal"><span class="pre">Call</span></tt> Process class
+whose only purpose is to make the cellphone ring after a delay,
+<tt class="docutils literal"><span class="pre">timeOfCall</span></tt>, an argument to its <tt class="docutils literal"><span class="pre">ring</span></tt> PEM (line 26).</p>
+<p><tt class="docutils literal"><span class="pre">klaus</span></tt>, a <tt class="docutils literal"><span class="pre">Customer</span></tt>, is interrupted by the call (line 29).
+He is in the middle of a <tt class="docutils literal"><span class="pre">yield</span> <span class="pre">hold</span></tt> (line 12). When he exits
+from that command it is as if he went into a trance when talking to
+the bank manager. He suddenly wakes up and must check (line 13)
+to see whether has finished his conversation (if there was no call) or
+has been interrupted.</p>
+<p>If <tt class="docutils literal"><span class="pre">self.interrupted()</span></tt> is <tt class="xref docutils literal"><span class="pre">False</span></tt> he was not interrupted and
+leaves the bank (line 21) normally. If it is <tt class="xref docutils literal"><span class="pre">True</span></tt>, he was
+interrupted by the call, remembers how much conversation he has left
+(line 14), resets the interrupt (line 15) and then deals
+with the call. When he finishes (line 19) he can resume the
+conversation, with, now we assume, a thoroughly irritated bank manager
+v(line 20).</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot; bank22_OO: An interruption by a phone call &quot;&quot;&quot;</span>          
+<span class="kn">from</span> <span class="nn">SimPy.Simulation</span>  <span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span><span class="n">Process</span><span class="p">,</span><span class="n">hold</span>                         
+
+<span class="c">## Model components ------------------------</span>
+
+
+<span class="k">class</span> <span class="nc">Customer</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>                                 
+    <span class="sd">&quot;&quot;&quot; Customer arrives, looks around and leaves &quot;&quot;&quot;</span>
+        
+    <span class="k">def</span> <span class="nf">visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">timeInBank</span><span class="p">,</span><span class="n">onphone</span><span class="p">):</span>                  
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Here I am&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>    
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">timeInBank</span>                       
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interrupted</span><span class="p">():</span>                           
+            <span class="n">timeleft</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interruptLeft</span>                
+            <span class="bp">self</span><span class="o">.</span><span class="n">interruptReset</span><span class="p">()</span>                        
+            <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Excuse me&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Hello! I&#39;ll call back&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">onphone</span>                      
+            <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Sorry, where were we?&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">timeleft</span>                     
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: I must leave&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> 
+   
+<span class="k">class</span> <span class="nc">Call</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>                                     
+    <span class="sd">&quot;&quot;&quot; Cellphone call arrives and interrupts &quot;&quot;&quot;</span> 
+        
+    <span class="k">def</span> <span class="nf">ring</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">klaus</span><span class="p">,</span><span class="n">timeOfCall</span><span class="p">):</span>                     
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">timeOfCall</span>                       
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> Ringgg!&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>                    
+        <span class="bp">self</span><span class="o">.</span><span class="n">interrupt</span><span class="p">(</span><span class="n">klaus</span><span class="p">)</span>                            
+
+<span class="c">## Model -----------------------------------</span>
+
+<span class="k">class</span> <span class="nc">BankModel</span><span class="p">(</span><span class="n">Simulation</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>                                             
+        <span class="n">klaus</span> <span class="o">=</span> <span class="n">Customer</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Klaus&quot;</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>                           
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">klaus</span><span class="p">,</span><span class="n">klaus</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">timeInBank</span><span class="p">,</span><span class="n">onphone</span><span class="p">))</span>          
+        <span class="n">call</span> <span class="o">=</span> <span class="n">Call</span><span class="p">(</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>                                       
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">ring</span><span class="p">(</span><span class="n">klaus</span><span class="p">,</span><span class="n">timeOfCall</span><span class="p">))</span>              
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">until</span><span class="o">=</span><span class="n">maxTime</span><span class="p">)</span>  
+
+<span class="c">## Experiment data -------------------------</span>
+
+<span class="n">timeInBank</span> <span class="o">=</span> <span class="mf">20.0</span>
+<span class="n">timeOfCall</span> <span class="o">=</span> <span class="mf">9.0</span>
+<span class="n">onphone</span> <span class="o">=</span> <span class="mf">3.0</span>
+<span class="n">maxTime</span> <span class="o">=</span> <span class="mf">100.0</span>
+
+<span class="c">## Experiment  -----------------------------</span>
+<span class="n">BankModel</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</td></tr></table></div>
+<div class="highlight-python"><pre> 0.0000 Klaus: Here I am
+ 9.0000 Ringgg!
+ 9.0000 Klaus: Excuse me
+ 9.0000 Klaus: Hello! I'll call back
+12.0000 Klaus: Sorry, where were we?
+23.0000 Klaus: I must leave
+</pre>
+</div>
+<p>As this has no random numbers the results are reasonably clear: the
+interrupting call occurs at 9.0. It takes <tt class="docutils literal"><span class="pre">klaus</span></tt> 3 minutes to
+listen to the message and he resumes the conversation with the bank
+manager at 12.0. His total time of conversation is 9.0 + 11.0 = 20.0
+minutes as it would have been if the interrupt had not occurred.</p>
+</div>
+<div class="section" id="waituntil-the-bank-door-opens">
+<h3><tt class="docutils literal"><span class="pre">waituntil</span></tt> the Bank door opens<a class="headerlink" href="#waituntil-the-bank-door-opens" title="Permalink to this headline">¶</a></h3>
+<p>Customers arrive at random, some of them getting to the bank before
+the door is opened by a doorman. They wait for the door to be opened
+and then rush in and queue to be served. The door is modeled by an
+attribute <tt class="docutils literal"><span class="pre">door</span></tt> of <tt class="docutils literal"><span class="pre">BankModel</span></tt>.</p>
+<p>This model uses the <tt class="docutils literal"><span class="pre">waituntil</span></tt> yield command. In the program listing
+the door is initially closed (line 58) and a method to test if
+it is open is defined at line 54.</p>
+<p>The <tt class="docutils literal"><span class="pre">Doorman</span></tt> class is defined starting at line 7 and the single
+<tt class="docutils literal"><span class="pre">doorman</span></tt> is created and activated at at lines 59 and 60. The
+doorman waits for an average 10 minutes (line 11) and then
+opens the door.</p>
+<p>The <tt class="docutils literal"><span class="pre">Customer</span></tt> class is defined at 24 and a new customer prints out
+<tt class="docutils literal"><span class="pre">Here</span> <span class="pre">I</span> <span class="pre">am</span></tt> on arrival. If the door is still closed, he adds <tt class="docutils literal"><span class="pre">but</span>
+<span class="pre">the</span> <span class="pre">door</span> <span class="pre">is</span> <span class="pre">shut</span></tt> and settles down to wait (line 35), using the
+<tt class="docutils literal"><span class="pre">yield</span> <span class="pre">waituntil</span></tt> command. When the door is opened by the doorman the
+<tt class="docutils literal"><span class="pre">dooropen</span></tt> state is changed and the customer (and all others waiting
+for the door) proceed. A customer arriving when the door is open will
+not be delayed.</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;bank14_OO: *waituntil* the Bank door opens&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">SimPy.Simulation</span> <span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span><span class="n">Process</span><span class="p">,</span><span class="n">Resource</span><span class="p">,</span><span class="n">hold</span><span class="p">,</span><span class="n">waituntil</span><span class="p">,</span><span class="n">request</span><span class="p">,</span><span class="n">release</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">expovariate</span><span class="p">,</span><span class="n">seed</span>
+
+<span class="c">## Model components ------------------------</span>
+                                               
+<span class="k">class</span> <span class="nc">Doorman</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>                                       
+    <span class="sd">&quot;&quot;&quot; Doorman opens the door&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">openthedoor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; He will open the door when he arrives&quot;&quot;&quot;</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">expovariate</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">10.0</span><span class="p">)</span>                 
+        <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">door</span> <span class="o">=</span> <span class="s">&#39;Open&#39;</span>                                           
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> Doorman: Ladies and &quot;</span>\
+              <span class="s">&quot;Gentlemen! You may all enter.&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),)</span>
+
+<span class="k">class</span> <span class="nc">Source</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>                                        
+    <span class="sd">&quot;&quot;&quot; Source generates customers randomly&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">,</span><span class="n">rate</span><span class="p">):</span>       
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number</span><span class="p">):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">Customer</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Customer</span><span class="si">%02d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,),</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">timeInBank</span><span class="o">=</span><span class="mf">12.0</span><span class="p">))</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">expovariate</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Customer</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>                                      
+    <span class="sd">&quot;&quot;&quot; Customer arrives, is served and leaves &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">timeInBank</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>       
+        <span class="n">arrive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">dooropen</span><span class="p">():</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39; and the door is open.&#39;</span>         
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39; but the door is shut.&#39;</span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Here I am</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">waituntil</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">dooropen</span>                         
+
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: I can  go in!&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>     
+        <span class="n">wait</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">-</span><span class="n">arrive</span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Waited </span><span class="si">%6.3f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">wait</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">request</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">counter</span>
+        <span class="n">tib</span> <span class="o">=</span> <span class="n">expovariate</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">timeInBank</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">tib</span>
+        <span class="k">yield</span> <span class="n">release</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">counter</span>
+
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Finished    &quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>                                 
+
+<span class="c">## Model  ----------------------------------</span>
+
+<span class="k">class</span> <span class="nc">BankModel</span><span class="p">(</span><span class="n">Simulation</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">dooropen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>                                               
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">door</span><span class="o">==</span><span class="s">&#39;Open&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">aseed</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="n">seed</span><span class="p">(</span><span class="n">aseed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span><span class="n">capacity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Clerk&quot;</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">door</span> <span class="o">=</span> <span class="s">&#39;Shut&#39;</span>
+        <span class="n">doorman</span><span class="o">=</span><span class="n">Doorman</span><span class="p">(</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>                                          
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">doorman</span><span class="p">,</span><span class="n">doorman</span><span class="o">.</span><span class="n">openthedoor</span><span class="p">())</span>                    
+        <span class="n">source</span> <span class="o">=</span> <span class="n">Source</span><span class="p">(</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>                                                         
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">source</span><span class="p">,</span>
+             <span class="n">source</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span><span class="n">at</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">until</span><span class="o">=</span><span class="mf">400.0</span><span class="p">)</span>
+
+<span class="c">## Experiment data -------------------------</span>
+
+<span class="n">maxTime</span> <span class="o">=</span> <span class="mf">2000.0</span>   <span class="c"># minutes    </span>
+<span class="n">seedVal</span> <span class="o">=</span> <span class="mi">393939</span>
+
+<span class="c">## Experiment  ----------------------------------</span>
+
+<span class="n">BankModel</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">aseed</span><span class="o">=</span><span class="n">seedVal</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<p>An output run for this programs shows how the first three customers
+have to wait until the door is opened.</p>
+<div class="highlight-python"><pre> 0.0000 Customer00: Here I am but the door is shut.
+ 5.6941 Customer01: Here I am but the door is shut.
+15.8155 Customer02: Here I am but the door is shut.
+22.2064 Doorman: Ladies and Gentlemen! You may all enter.
+22.2064 Customer00: I can  go in!
+22.2064 Customer00: Waited 22.206
+22.2064 Customer01: I can  go in!
+22.2064 Customer01: Waited 16.512
+22.2064 Customer02: I can  go in!
+22.2064 Customer02: Waited  6.391
+22.4603 Customer03: Here I am and the door is open.
+22.4603 Customer03: I can  go in!
+22.4603 Customer03: Waited  0.000
+24.8884 Customer00: Finished    
+30.8017 Customer04: Here I am and the door is open.
+30.8017 Customer04: I can  go in!
+30.8017 Customer04: Waited  0.000
+57.5367 Customer01: Finished    
+58.6695 Customer02: Finished    
+91.0096 Customer03: Finished    
+93.5228 Customer04: Finished    
+</pre>
+</div>
+</div>
+<div class="section" id="wait-for-the-doorman-to-give-a-signal-waitevent">
+<h3>Wait for the doorman to give a signal: <tt class="docutils literal"><span class="pre">waitevent</span></tt><a class="headerlink" href="#wait-for-the-doorman-to-give-a-signal-waitevent" title="Permalink to this headline">¶</a></h3>
+<p>Customers arrive at random, some of them getting to the bank before
+the door is open. This is controlled by an automatic machine called
+the doorman which opens the door only at intervals of 30 minutes (it
+is a very secure bank). The customers wait for the door to be opened
+and all those waiting enter and proceed to the counter. The door is
+closed behind them.</p>
+<p>This model uses the <tt class="docutils literal"><span class="pre">yield</span> <span class="pre">waitevent</span></tt> command which requires a
+<tt class="docutils literal"><span class="pre">SimEvent</span></tt> attribute for <tt class="docutils literal"><span class="pre">BankModel</span></tt> to be defined (line 56).
+The <tt class="docutils literal"><span class="pre">Doorman</span></tt> class is defined
+at line 7 and the <tt class="docutils literal"><span class="pre">doorman</span></tt> is created and activated at at labels
+56 and 57. The doorman waits for a fixed time (label
+12) and then tells the customers that the door is open. This is
+achieved on line 13 by signalling the <tt class="docutils literal"><span class="pre">dooropen</span></tt> event.</p>
+<p>The <tt class="docutils literal"><span class="pre">Customer</span></tt> class is defined at 24 and in its PEM, when a
+customer arrives, he prints out <tt class="docutils literal"><span class="pre">Here</span> <span class="pre">I</span> <span class="pre">am</span></tt>. If the door is still
+closed, he adds <cite>&#8220;but the door is shut`</cite> and settles down to wait for
+the door to be opened using the <tt class="docutils literal"><span class="pre">yield</span> <span class="pre">waitevent</span></tt> command (line
+34). When the door is opened by the doorman (that is, he sends
+the <tt class="docutils literal"><span class="pre">dooropen.signal()</span></tt> the customer and any others waiting may
+proceed.</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot; bank13_OO: Wait for the doorman to give a signal: *waitevent*&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">SimPy.Simulation</span> <span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span><span class="n">Process</span><span class="p">,</span><span class="n">Resource</span><span class="p">,</span><span class="n">SimEvent</span><span class="p">,</span><span class="n">hold</span><span class="p">,</span><span class="n">request</span><span class="p">,</span><span class="n">release</span><span class="p">,</span><span class="n">waitevent</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c">## Model components ------------------------</span>
+                              
+<span class="k">class</span> <span class="nc">Doorman</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>                                       
+    <span class="sd">&quot;&quot;&quot; Doorman opens the door&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">openthedoor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; He will opens the door at fixed intervals&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span> <span class="mf">30.0</span>                              
+            <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">dooropen</span><span class="o">.</span><span class="n">signal</span><span class="p">()</span>                                     
+            <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> You may enter&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),)</span>
+
+<span class="k">class</span> <span class="nc">Source</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>                                        
+    <span class="sd">&quot;&quot;&quot; Source generates customers randomly&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">,</span><span class="n">rate</span><span class="p">):</span>       
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number</span><span class="p">):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">Customer</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Customer</span><span class="si">%02d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,),</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">timeInBank</span><span class="o">=</span><span class="mf">12.0</span><span class="p">))</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">expovariate</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Customer</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>                                      
+    <span class="sd">&quot;&quot;&quot; Customer arrives, is served and leaves &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">timeInBank</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>       
+        <span class="n">arrive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">dooropen</span><span class="o">.</span><span class="n">occurred</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;.&#39;</span>                                         
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39; but the door is shut.&#39;</span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Here I am</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">waitevent</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">dooropen</span>                         
+
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: The door is open!&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="n">wait</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">-</span><span class="n">arrive</span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Waited </span><span class="si">%6.3f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">wait</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">request</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">counter</span>
+        <span class="n">tib</span> <span class="o">=</span> <span class="n">expovariate</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">timeInBank</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">tib</span>
+        <span class="k">yield</span> <span class="n">release</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">counter</span>
+
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%7.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Finished    &quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>                
+
+<span class="c">## Model  ----------------------------------</span>
+
+<span class="k">class</span> <span class="nc">BankModel</span><span class="p">(</span><span class="n">Simulation</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">aseed</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="n">seed</span><span class="p">(</span><span class="n">aseed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dooropen</span><span class="o">=</span><span class="n">SimEvent</span><span class="p">(</span><span class="s">&quot;Door Open&quot;</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Clerk&quot;</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">doorman</span> <span class="o">=</span> <span class="n">Doorman</span><span class="p">(</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>                                          
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">doorman</span><span class="p">,</span><span class="n">doorman</span><span class="o">.</span><span class="n">openthedoor</span><span class="p">())</span>                    
+        <span class="n">source</span> <span class="o">=</span> <span class="n">Source</span><span class="p">(</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>                                                        
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">source</span><span class="p">,</span>
+             <span class="n">source</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span><span class="n">at</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">until</span><span class="o">=</span><span class="n">maxTime</span><span class="p">)</span>
+
+<span class="c">## Experiment data -------------------------</span>
+
+<span class="n">maxTime</span> <span class="o">=</span> <span class="mf">400.0</span>  <span class="c"># minutes</span>
+<span class="n">seedVal</span> <span class="o">=</span> <span class="mi">393939</span>
+
+<span class="c">## Experiment  ----------------------------------</span>
+
+<span class="n">BankModel</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">aseed</span><span class="o">=</span><span class="n">seedVal</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<p>An output run for this programs shows how the first three customers
+have to wait until the door is opened.</p>
+<div class="highlight-python"><pre> 0.0000 Customer00: Here I am but the door is shut.
+22.2064 Customer01: Here I am but the door is shut.
+27.9005 Customer02: Here I am but the door is shut.
+30.0000 You may enter
+30.0000 Customer02: The door is open!
+30.0000 Customer02: Waited  2.099
+30.0000 Customer01: The door is open!
+30.0000 Customer01: Waited  7.794
+30.0000 Customer00: The door is open!
+30.0000 Customer00: Waited 30.000
+37.9738 Customer02: Finished    
+38.0219 Customer03: Here I am but the door is shut.
+40.6558 Customer01: Finished    
+46.3632 Customer04: Here I am but the door is shut.
+60.0000 You may enter
+60.0000 Customer04: The door is open!
+60.0000 Customer04: Waited 13.637
+60.0000 Customer03: The door is open!
+60.0000 Customer03: Waited 21.978
+73.3042 Customer00: Finished    
+74.4369 Customer04: Finished    
+90.0000 You may enter
+106.7770 Customer03: Finished    
+120.0000 You may enter
+150.0000 You may enter
+</pre>
+</div>
+</div>
+</div>
+<div class="section" id="monitors">
+<h2>Monitors<a class="headerlink" href="#monitors" title="Permalink to this headline">¶</a></h2>
+<p>Monitors (and Tallys) are used to track and record values in a
+simulation. They store a list of [time,value] pairs, one pair being
+added whenever the <tt class="docutils literal"><span class="pre">observe</span></tt> method is called.  A particularly
+useful characteristic is that they continue to exist after the
+simulation has been completed. Thus further analysis of the results
+can be carried out.</p>
+<p>Monitors have a set of simple statistical methods such as <tt class="docutils literal"><span class="pre">mean</span></tt> and
+<tt class="docutils literal"><span class="pre">var</span></tt> to calculate the average and variance of the observed values
+&#8211; useful in estimating the mean delay, for example.</p>
+<p>They also have the <tt class="docutils literal"><span class="pre">timeAverage</span></tt> method that calculates the
+time-weighted average of the recorded values. It determines the total
+area under the time~value graph and divides by the total time. This is
+useful for estimating the average number of customers in the bank, for
+example.  There is an <em>important caveat</em> in using this method. To
+estimate the correct time average you must certainly <tt class="docutils literal"><span class="pre">observe</span></tt> the
+value (say the number of customers in the system) whenever it changes
+(as well as at any other time you wish) but, and this is important,
+observing the <em>new</em> value. The <em>old</em> value was recorded earlier. In
+practice this means that if we wish to observe a changing value,
+<tt class="docutils literal"><span class="pre">n</span></tt>, using the Monitor, <tt class="docutils literal"><span class="pre">Mon</span></tt>, we must keep to the the following
+pattern:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span>
+<span class="n">Mon</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Thus you make the change (not only increases) and <em>then</em> observe the new
+value. Of course the simulation time <tt class="docutils literal"><span class="pre">now()</span></tt> has not changed between
+the two statements.</p>
+<div class="section" id="plotting-a-histogram-of-monitor-results">
+<h3>Plotting a Histogram of Monitor results<a class="headerlink" href="#plotting-a-histogram-of-monitor-results" title="Permalink to this headline">¶</a></h3>
+<p>A Monitor can construct a histogram from its data using the
+<tt class="docutils literal"><span class="pre">histogram</span></tt> method. In this model we monitor the time in the system
+for the customers. This is calculated for each customer in line
+29, using the arrival time saved in line 19. We create the
+Monitor attribute of <tt class="docutils literal"><span class="pre">BankModel</span></tt>, <tt class="docutils literal"><span class="pre">Mon</span></tt>, at line 39 and the times
+are <tt class="docutils literal"><span class="pre">observed</span></tt> at line 30.</p>
+<p>The histogram is constructed from the Monitor, after the simulation
+has finished, at line 58. The SimPy SimPlot package allows
+simple plotting of results from simulations.  Here we use the SimPlot
+<tt class="docutils literal"><span class="pre">plotHistogram</span></tt> method. The plotting routines appear in lines
+60-64. The <tt class="docutils literal"><span class="pre">plotHistogram</span></tt> call is in line 61.</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;bank17_OO: Plotting a Histogram of Monitor results&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">SimPy.Simulation</span>  <span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span><span class="n">Process</span><span class="p">,</span><span class="n">Resource</span><span class="p">,</span><span class="n">Monitor</span><span class="p">,</span><span class="n">hold</span><span class="p">,</span><span class="n">request</span><span class="p">,</span><span class="n">release</span>
+<span class="kn">from</span> <span class="nn">SimPy.SimPlot</span> <span class="kn">import</span> <span class="o">*</span>                                  
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span>  <span class="n">expovariate</span><span class="p">,</span><span class="n">seed</span>  
+
+<span class="c">## Model components ------------------------</span>
+
+<span class="k">class</span> <span class="nc">Source</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>                                        
+    <span class="sd">&quot;&quot;&quot; Source generates customers randomly&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">,</span><span class="n">rate</span><span class="p">):</span>       
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number</span><span class="p">):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">Customer</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Customer</span><span class="si">%02d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,),</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">timeInBank</span><span class="o">=</span><span class="mf">12.0</span><span class="p">))</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">expovariate</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Customer</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>                                      
+    <span class="sd">&quot;&quot;&quot; Customer arrives, is served and leaves &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">timeInBank</span><span class="p">):</span>       
+        <span class="n">arrive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>                                         
+        <span class="c">#print &quot;%8.4f %s: Arrived     &quot;%(now(),self.name)</span>
+
+        <span class="k">yield</span> <span class="n">request</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">counter</span>
+        <span class="c">#print &quot;%8.4f %s: Got counter &quot;%(now(),self.name)</span>
+        <span class="n">tib</span> <span class="o">=</span> <span class="n">expovariate</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">timeInBank</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">tib</span>
+        <span class="k">yield</span> <span class="n">release</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">counter</span>
+
+        <span class="c">#print &quot;%8.4f %s: Finished    &quot;%(now(),self.name)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">-</span><span class="n">arrive</span>                                      
+        <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Mon</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>                                        
+
+<span class="c">## Model  ----------------------------------</span>
+
+<span class="k">class</span> <span class="nc">BankModel</span><span class="p">(</span><span class="n">Simulation</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">aseed</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="n">seed</span><span class="p">(</span><span class="n">aseed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Clerk&quot;</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>                           
+        <span class="bp">self</span><span class="o">.</span><span class="n">Mon</span> <span class="o">=</span> <span class="n">Monitor</span><span class="p">(</span><span class="s">&#39;Time in the Bank&#39;</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">Source</span><span class="p">(</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>                                                         
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">source</span><span class="p">,</span>
+             <span class="n">source</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span><span class="n">at</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">until</span><span class="o">=</span><span class="n">maxTime</span><span class="p">)</span>  
+
+<span class="c">## Experiment data -------------------------</span>
+
+<span class="n">maxTime</span> <span class="o">=</span> <span class="mf">400.0</span>   <span class="c"># minutes                                     </span>
+                                
+<span class="n">N</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">seedVal</span> <span class="o">=</span> <span class="mi">393939</span>
+
+<span class="c">## Experiment  -----------------------------</span>
+
+<span class="n">modl</span><span class="o">=</span><span class="n">BankModel</span><span class="p">()</span>
+<span class="n">modl</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">aseed</span><span class="o">=</span><span class="n">seedVal</span><span class="p">)</span>
+
+<span class="c">## Output ----------------------------------</span>
+<span class="n">Histo</span> <span class="o">=</span> <span class="n">modl</span><span class="o">.</span><span class="n">Mon</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">high</span><span class="o">=</span><span class="mf">200.0</span><span class="p">,</span><span class="n">nbins</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>             
+
+<span class="n">plt</span> <span class="o">=</span> <span class="n">SimPlot</span><span class="p">()</span>                                                  
+<span class="n">plt</span><span class="o">.</span><span class="n">plotHistogram</span><span class="p">(</span><span class="n">Histo</span><span class="p">,</span><span class="n">xlab</span><span class="o">=</span><span class="s">&#39;Time (min)&#39;</span><span class="p">,</span>                       
+                  <span class="n">title</span><span class="o">=</span><span class="s">&quot;Time in the Bank&quot;</span><span class="p">,</span>
+                  <span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>                         
+<span class="n">plt</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>                                                 
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="monitoring-a-resource">
+<h3>Monitoring a Resource<a class="headerlink" href="#monitoring-a-resource" title="Permalink to this headline">¶</a></h3>
+<p>Now consider observing the number of customers waiting or executing in
+a Resource. Because of the need to <tt class="docutils literal"><span class="pre">observe</span></tt> the value after the
+change but at the same simulation instant, it is impossible to use the
+length of the Resource&#8217;s <tt class="docutils literal"><span class="pre">waitQ</span></tt> directly with a Monitor defined
+outside the Resource. Instead Resources can be set up with built-in
+Monitors.</p>
+<p>Here is an example using a Monitored Resource. We intend to observe
+the average number waiting and active in the <tt class="docutils literal"><span class="pre">counter</span></tt>
+resource. <tt class="docutils literal"><span class="pre">counter</span></tt> is defined at line 35 as a <tt class="docutils literal"><span class="pre">BankModel</span></tt> attribute
+and we have set
+<tt class="docutils literal"><span class="pre">monitored=True</span></tt>. This establishes two Monitors: <tt class="docutils literal"><span class="pre">waitMon</span></tt>, to
+record changes in the numbers waiting and <tt class="docutils literal"><span class="pre">actMon</span></tt> to record changes
+in the numbers active in the <tt class="docutils literal"><span class="pre">counter</span></tt>. We need make no further
+change to the operation of the program as monitoring is then
+automatic.  No <tt class="docutils literal"><span class="pre">observe</span></tt> calls are necessary.</p>
+<p>After completion of the <tt class="docutils literal"><span class="pre">run</span></tt> method, we calculate the
+<tt class="docutils literal"><span class="pre">timeAverage</span></tt> of both <tt class="docutils literal"><span class="pre">waitMon</span></tt> and <tt class="docutils literal"><span class="pre">actMon</span></tt> (lines 53-54).
+These can then be printed at the end of the program (line 55).</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;bank15_OO: Monitoring a Resource&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">SimPy.Simulation</span>  <span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span><span class="n">Process</span><span class="p">,</span><span class="n">Resource</span><span class="p">,</span><span class="n">Monitor</span><span class="p">,</span><span class="n">hold</span><span class="p">,</span><span class="n">request</span><span class="p">,</span><span class="n">release</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c">## Model components ------------------------</span>
+
+<span class="k">class</span> <span class="nc">Source</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>                                        
+    <span class="sd">&quot;&quot;&quot; Source generates customers randomly&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">,</span><span class="n">rate</span><span class="p">):</span>       
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number</span><span class="p">):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">Customer</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Customer</span><span class="si">%02d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,),</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">timeInBank</span><span class="o">=</span><span class="mf">12.0</span><span class="p">,</span><span class="n">counter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">counter</span><span class="p">))</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">expovariate</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Customer</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>                                      
+    <span class="sd">&quot;&quot;&quot; Customer arrives, is served and leaves &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">timeInBank</span><span class="p">,</span><span class="n">counter</span><span class="p">):</span>       
+        <span class="n">arrive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Arrived     &quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">request</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">counter</span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Got counter &quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">tib</span> <span class="o">=</span> <span class="n">expovariate</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">timeInBank</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">tib</span>
+        <span class="k">yield</span> <span class="n">release</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">counter</span>
+
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%8.4f</span><span class="s"> </span><span class="si">%s</span><span class="s">: Finished    &quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>                             
+
+<span class="c">## Model  ----------------------------------</span>
+
+<span class="k">class</span> <span class="nc">BankModel</span><span class="p">(</span><span class="n">Simulation</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">aseed</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="n">seed</span><span class="p">(</span><span class="n">aseed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span><span class="n">capacity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Clerk&quot;</span><span class="p">,</span><span class="n">monitored</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span> 
+        <span class="n">source</span> <span class="o">=</span> <span class="n">Source</span><span class="p">(</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>                                                         
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">source</span><span class="p">,</span>
+                 <span class="n">source</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span><span class="n">at</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">until</span><span class="o">=</span><span class="n">maxTime</span><span class="p">)</span>
+
+        <span class="k">return</span> 
+
+<span class="c">## Experiment data -------------------------</span>
+
+<span class="n">maxTime</span> <span class="o">=</span> <span class="mf">400.0</span>    <span class="c"># minutes </span>
+<span class="n">seedVal</span> <span class="o">=</span> <span class="mi">393939</span>
+
+<span class="c">## Experiment  ----------------------------------</span>
+
+<span class="n">modl</span> <span class="o">=</span> <span class="n">BankModel</span><span class="p">()</span>
+<span class="n">modl</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">aseed</span><span class="o">=</span><span class="n">seedVal</span><span class="p">)</span>
+
+<span class="n">nrwaiting</span> <span class="o">=</span> <span class="n">modl</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">waitMon</span><span class="o">.</span><span class="n">timeAverage</span><span class="p">()</span>
+<span class="n">nractive</span> <span class="o">=</span> <span class="n">modl</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">actMon</span><span class="o">.</span><span class="n">timeAverage</span><span class="p">()</span>
+<span class="k">print</span> <span class="s">&#39;Average waiting = </span><span class="si">%6.4f</span><span class="se">\n</span><span class="s">Average active  = </span><span class="si">%6.4f</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nrwaiting</span><span class="p">,</span><span class="n">nractive</span><span class="p">)</span> 
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="plotting-from-resource-monitors">
+<h3>Plotting from  Resource Monitors<a class="headerlink" href="#plotting-from-resource-monitors" title="Permalink to this headline">¶</a></h3>
+<p>Like all Monitors, <tt class="docutils literal"><span class="pre">waitMon</span></tt> and <tt class="docutils literal"><span class="pre">actMon</span></tt> in a monitored Resource
+contain information that enables us to graph the output. Alternative
+plotting packages can be used; here we use the simple <tt class="docutils literal"><span class="pre">SimPy.SimPlot</span></tt>
+package just to graph the number of customers waiting for the
+counter. The program is a simple modification of the one that uses a
+monitored Resource.</p>
+<p>The SimPlot package is imported at line 3. No major changes are
+made to the main part of the program except that I commented out the
+print statements. The changes occur in the <tt class="docutils literal"><span class="pre">run</span></tt> method from lines
+38 to 39. The simulation now generates and processes 20
+customers (line 39). The Monitors of the <tt class="docutils literal"><span class="pre">counter</span></tt> Resource attribute
+still exist when the simulation has terminated.</p>
+<p>The additional plotting actions take place in lines 54 to
+57. Line 55-56 construct a step plot and graphs the
+number in the waiting queue as a function of time. <tt class="docutils literal"><span class="pre">waitMon</span></tt> is
+primarily a list of <em>[time,value]</em> pairs which the <tt class="docutils literal"><span class="pre">plotStep</span></tt> method
+of the SimPlot object, <tt class="docutils literal"><span class="pre">plt</span></tt> uses without change. On running the
+program the graph is plotted; the user has to terminate the plotting
+<tt class="docutils literal"><span class="pre">mainloop</span></tt> on the screen.</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;bank16_OO: Plotting from  Resource Monitors&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">SimPy.Simulation</span> <span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span><span class="n">Process</span><span class="p">,</span><span class="n">Resource</span><span class="p">,</span><span class="n">hold</span><span class="p">,</span><span class="n">request</span><span class="p">,</span><span class="n">release</span>
+<span class="kn">from</span> <span class="nn">SimPy.SimPlot</span> <span class="kn">import</span> <span class="o">*</span>                                   
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">expovariate</span><span class="p">,</span><span class="n">seed</span>
+
+<span class="c">## Model components ------------------------           </span>
+
+<span class="k">class</span> <span class="nc">Source</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>                                        
+    <span class="sd">&quot;&quot;&quot; Source generates customers randomly&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">,</span><span class="n">rate</span><span class="p">):</span>       
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number</span><span class="p">):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">Customer</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Customer</span><span class="si">%02d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,),</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">timeInBank</span><span class="o">=</span><span class="mf">12.0</span><span class="p">))</span>
+            <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">expovariate</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Customer</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>                                      
+    <span class="sd">&quot;&quot;&quot; Customer arrives, is served and leaves &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">timeInBank</span><span class="p">):</span>       
+        <span class="n">arrive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="c">#print &quot;%8.4f %s: Arrived     &quot;%(now(),self.name)</span>
+
+        <span class="k">yield</span> <span class="n">request</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">counter</span>
+        <span class="c">#print &quot;%8.4f %s: Got counter &quot;%(now(),self.name)</span>
+        <span class="n">tib</span> <span class="o">=</span> <span class="n">expovariate</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">timeInBank</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">hold</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">tib</span>
+        <span class="k">yield</span> <span class="n">release</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">counter</span>
+
+        <span class="c">#print &quot;%8.4f %s: Finished    &quot;%(now(),self.name)</span>
+
+<span class="c">## Model -----------------------------------</span>
+
+<span class="k">class</span> <span class="nc">BankModel</span><span class="p">(</span><span class="n">Simulation</span><span class="p">):</span>                                      
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">aseed</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="n">seed</span><span class="p">(</span><span class="n">aseed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Clerk&quot;</span><span class="p">,</span><span class="n">monitored</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span> 
+        <span class="n">source</span> <span class="o">=</span> <span class="n">Source</span><span class="p">(</span><span class="n">sim</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>                                                         
+        <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">source</span><span class="p">,</span>
+             <span class="n">source</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span><span class="n">at</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">until</span><span class="o">=</span><span class="n">maxTime</span><span class="p">)</span>  
+
+<span class="c">## Experiment data -------------------------</span>
+
+<span class="n">maxTime</span> <span class="o">=</span> <span class="mf">400.0</span>   <span class="c"># minutes                                    </span>
+<span class="n">seedVal</span> <span class="o">=</span> <span class="mi">393939</span>
+
+<span class="c">## Experiment -----------------------------------</span>
+
+<span class="n">modl</span><span class="o">=</span><span class="n">BankModel</span><span class="p">()</span>
+<span class="n">modl</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">aseed</span><span class="o">=</span><span class="n">seedVal</span><span class="p">)</span>
+ 
+<span class="c">## Output ---------------------------------------</span>
+
+<span class="n">plt</span> <span class="o">=</span> <span class="n">SimPlot</span><span class="p">()</span>                                                  
+<span class="n">plt</span><span class="o">.</span><span class="n">plotStep</span><span class="p">(</span><span class="n">modl</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">waitMon</span><span class="p">,</span>                                  
+        <span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>                                   
+<span class="n">plt</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>                                                 
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="acknowledgements">
+<h2>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
+<p>I thank Klaus Muller, Bob Helmbold, Mukhlis Matti and the other
+developers and users of SimPy for improving this document by sending
+their comments. I would be grateful for any further corrections or
+suggestions. Please send them to: <em>vignaux</em> at
+<em>users.sourceforge.net</em>.</p>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Python website: <a class="reference external" href="http://www.Python.org">http://www.Python.org</a></li>
+<li>SimPy homepage: <a class="reference external" href="http://simpy.sourceforge.net/">http://simpy.sourceforge.net/</a></li>
+<li>The Bank:</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Version:</th><td class="field-body">$Revision: 321 $</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/sm_SimPy_Logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The Bank Tutorial (Advanced OO API) Part 2: More  examples of SimPy Simulation</a><ul>
+<li><a class="reference internal" href="#advanced-oo-api-bank-tutorial-version">Advanced OO API Bank Tutorial version</a></li>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#priority-customers">Priority Customers</a><ul>
+<li><a class="reference internal" href="#priority-customers-without-preemption">Priority Customers without preemption</a></li>
+<li><a class="reference internal" href="#priority-customers-with-preemption">Priority Customers with preemption</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#balking-and-reneging-customers">Balking and Reneging Customers</a><ul>
+<li><a class="reference internal" href="#balking-customers">Balking Customers</a></li>
+<li><a class="reference internal" href="#reneging-or-abandoning-customers">Reneging (or abandoning) Customers</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#processes">Processes</a><ul>
+<li><a class="reference internal" href="#interrupting-a-process">Interrupting a Process.</a></li>
+<li><a class="reference internal" href="#waituntil-the-bank-door-opens"><tt class="docutils literal"><span class="pre">waituntil</span></tt> the Bank door opens</a></li>
+<li><a class="reference internal" href="#wait-for-the-doorman-to-give-a-signal-waitevent">Wait for the doorman to give a signal: <tt class="docutils literal"><span class="pre">waitevent</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#monitors">Monitors</a><ul>
+<li><a class="reference internal" href="#plotting-a-histogram-of-monitor-results">Plotting a Histogram of Monitor results</a></li>
+<li><a class="reference internal" href="#monitoring-a-resource">Monitoring a Resource</a></li>
+<li><a class="reference internal" href="#plotting-from-resource-monitors">Plotting from  Resource Monitors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#acknowledgements">Acknowledgements</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="TheBankOO.html"
+                        title="previous chapter">The Bank (Object Oriented version)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../OnLineSimPyCourse.html"
+                        title="next chapter">SimPy Course on the Web</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/Tutorials/TheBank2OO.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../OnLineSimPyCourse.html" title="SimPy Course on the Web"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="TheBankOO.html" title="The Bank (Object Oriented version)"
+             >previous</a> |</li>
+        <li><a href="../index.html">SimPy v2.2 documentation</a> &raquo;</li>
+          <li><a href="../SimPy_Tutorials.html" >SimPy Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2002-2011, Klaus Müller, Tony Vignaux, Ontje Lünsdorf, Stefan Scherfke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>
